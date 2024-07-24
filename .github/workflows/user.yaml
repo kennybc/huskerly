@@ -31,8 +31,10 @@ jobs:
       - name: Relay terraform state file outputs
         id: terraform
         run: |
+          cd terraform
           terraform init
           echo "huskerly-user-service-repo=$(terraform output -raw huskerly-user-service-repo)" >> "$GITHUB_OUTPUT"
+          cd ..
 
       - name: Login to Amazon ECR
         id: login-ecr
