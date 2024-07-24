@@ -1,0 +1,65 @@
+name: Deploy user microservice to EKS
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Github Repo
+        uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: "Install terraform"
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Install kustomize
+        run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: { { secrets.GITHUB_ROLE_ARN } }
+          aws-region: us-east-2
+          role-session-name: OIDCSession
+
+      - name: Relay terraform state file outputs
+        id: terraform
+        run: |
+          terraform init
+          echo "huskerly-user-service-repo=$(terraform output -raw huskerly-user-service-repo)" >> "$GITHUB_OUTPUT"
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push the image to Amazon ECR
+        id: build-image
+        run: |
+          cd services/user
+          docker build -t ${{ steps.terraform.outputs.repo-arn }}:${{ github.sha }} .
+          docker push ${{ steps.terraform.outputs.repo-arn }}:${{ github.sha }}
+          cd ../..
+
+      - name: Connect to EKS cluster
+        run: aws eks update-kubeconfig --name huskerly-cluster --region us-east-2
+
+      - name: Kustomize update image tag
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          USER_IMAGE_REPO=${{ steps.terraform.outputs.huskerly-user-service-repo }}
+          sed -i "s|IMAGE_TAG|${IMAGE_TAG}|g" k8s/kustomization.yaml
+          sed -i "s|USER_IMAGE_REPO|$USER_IMAGE_REPO}|g" k8s/kustomization.yaml
+
+      - name: Deploy to EKS
+        run: |
+          kubectl apply -k k8s
+
+permissions:
+  id-token: write
+  contents: read
