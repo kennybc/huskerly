@@ -33,9 +33,9 @@ jobs:
         run: |
           terraform init
           {
-            echo "huskerly-user-service-repo=$(terraform output -raw huskerly-user-service-repo)"
-            echo "huskerly-message-service-repo=$(terraform output -raw huskerly-message-service-repo)"
-            echo "huskerly-upload-service-repo=$(terraform output -raw huskerly-upload-service-repo)"
+            echo "user-repo-arn=$(terraform output -raw user-repo-arn)"
+            echo "message-repo-arn=$(terraform output -raw message-repo-arn)"
+            echo "upload-repo-arn=$(terraform output -raw upload-repo-arn)"
           } >> "$GITHUB_OUTPUT"
 
       - name: Login to Amazon ECR

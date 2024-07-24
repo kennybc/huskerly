@@ -33,7 +33,7 @@ jobs:
         run: |
           cd terraform
           terraform init
-          echo "huskerly-user-service-repo=$(terraform output -raw huskerly-user-service-repo)" >> "$GITHUB_OUTPUT"
+          echo "user-repo-arn=$(terraform output -raw user-repo-arn)" >> "$GITHUB_OUTPUT"
           cd ..
 
       - name: Login to Amazon ECR
@@ -44,7 +44,7 @@ jobs:
         id: build-image
         run: |
           cd services/user
-          docker build -t ${{ steps.terraform.outputs.repo-arn }}:${{ github.sha }} .
+          docker build -t ${{ steps.terraform.outputs.user-repo-arn }}:${{ github.sha }} .
           docker push ${{ steps.terraform.outputs.repo-arn }}:${{ github.sha }}
           cd ../..
 

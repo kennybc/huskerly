@@ -1,3 +1,11 @@
+data "terraform_remote_state" "state" {
+  backend = "local"
+
+  config = {
+    path = "./state/terraform.tfstate"
+  }
+}
+
 # Github actions provider
 resource "aws_iam_openid_connect_provider" "github-provider" {
   url = "https://token.actions.githubusercontent.com"
@@ -43,6 +51,27 @@ data "aws_iam_policy_document" "github-policy-doc" {
   statement {
     effect  = "Allow"
     actions = [
+      "s3:ListBucket",
+      "s3:GetObject",
+      "s3:PutObject",
+    ]
+    resources = [data.terraform_remote_state.state.outputs.s3-arn]
+  }
+
+  statement {
+    effect  = "Allow"
+    actions = [
+      "dynamodb:DescribeTable",
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:DeleteItem"
+    ]
+    resources = [data.terraform_remote_state.state.outputs.dyanodb-arn]
+  }
+
+  statement {
+    effect  = "Allow"
+    actions = [
       "ecr:GetAuthorizationToken",
     ]
     resources = ["*"]
@@ -67,7 +96,11 @@ data "aws_iam_policy_document" "github-policy-doc" {
       "ecr:PutImage",
       "ecr:UploadLayerPart"
     ]
-    resources = [aws_ecr_repository.huskerly-repository.arn]
+    resources = [
+      aws_ecr_repository.huskerly-user-repo.arn,
+      aws_ecr_repository.huskerly-message-repo.arn,
+      aws_ecr_repository.huskerly-upload-repo.arn
+    ]
   }
 }
 
