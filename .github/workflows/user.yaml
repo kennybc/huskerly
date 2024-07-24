@@ -6,7 +6,7 @@ on:
       - "main"
 
 jobs:
-  docker:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Github Repo
@@ -24,7 +24,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: { { secrets.GITHUB_ROLE_ARN } }
+          role-to-assume: ${{ secrets.GITHUB_ROLE_ARN }}
           aws-region: us-east-2
           role-session-name: OIDCSession
 
