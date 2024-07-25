@@ -43,15 +43,13 @@ jobs:
       - name: Build, tag, and push the image to Amazon ECR
         id: build-image
         run: |
-          cd services/user
-          docker build -t ${{ steps.terraform.outputs.user-repo-arn }}:${{ github.sha }} .
+          docker build -t ${{ steps.terraform.outputs.user-repo-arn }}:${{ github.sha }} -f services/user/Dockerfile .
           docker push ${{ steps.terraform.outputs.repo-arn }}:${{ github.sha }}
-          cd ../..
 
       - name: Connect to EKS cluster
         run: aws eks update-kubeconfig --name huskerly-cluster --region us-east-2
 
-      - name: Kustomize update image tag
+      - name: Kustomize newly pushed image tag
         run: |
           IMAGE_TAG=${{ github.sha }}
           USER_IMAGE_REPO=${{ steps.terraform.outputs.huskerly-user-service-repo }}
