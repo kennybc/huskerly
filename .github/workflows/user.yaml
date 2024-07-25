@@ -44,7 +44,7 @@ jobs:
         id: build-image
         run: |
           cd services/user
-          docker build -t ${{ steps.terraform.outputs.user-repo-arn }}:${{ github.sha }} -f services/user/Dockerfile .
+          docker build -t ${{ steps.terraform.outputs.user-repo-arn }}:${{ github.sha }} .
           docker push ${{ steps.terraform.outputs.repo-arn }}:${{ github.sha }}
           cd ../..
 
