@@ -57,9 +57,10 @@ jobs:
           USER_IMAGE_REPO=${{ steps.terraform.outputs.huskerly-user-service-repo }}
           sed -i "s|IMAGE_TAG|${IMAGE_TAG}|g" k8s/user/kustomization.yaml
           sed -i "s|USER_IMAGE_REPO|${USER_IMAGE_REPO}|g" k8s/user/kustomization.yaml
+          kubectl get nodes -v=10
 
-      - name: Deploy to EKS
-        run: kubectl apply -k k8s/user
+      #- name: Deploy to EKS
+      #  run: kubectl apply -k k8s/user
 
 permissions:
   id-token: write
