@@ -31,10 +31,10 @@ jobs:
       - name: Relay terraform state file outputs
         id: terraform
         run: |
-          cd terraform
+          cd terraform/network
           terraform init
           echo "user-repo-arn=$(terraform output -raw user-repo-arn)" >> "$GITHUB_OUTPUT"
-          cd ..
+          cd ../..
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -43,8 +43,10 @@ jobs:
       - name: Build, tag, and push the image to Amazon ECR
         id: build-image
         run: |
+          cd services/user
           docker build -t ${{ steps.terraform.outputs.user-repo-arn }}:${{ github.sha }} -f services/user/Dockerfile .
           docker push ${{ steps.terraform.outputs.repo-arn }}:${{ github.sha }}
+          cd ../..
 
       - name: Connect to EKS cluster
         run: aws eks update-kubeconfig --name huskerly-cluster --region us-east-2
