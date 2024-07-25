@@ -20,7 +20,7 @@ resource "aws_subnet" "huskerly-private-b" {
   tags = {
     "Name"                            = "huskerly-private-b"
     "kubernetes.io/role/internal-elb" = "1"
-    "kubernetes.io/cluster/demo"      = "owned"
+    "kubernetes.io/cluster/huskerly-cluster"      = "owned"
   }
 }
 
@@ -32,7 +32,7 @@ resource "aws_subnet" "huskerly-public-a" {
   tags = {
     "Name"                       = "huskerly-public-a"
     "kubernetes.io/role/elb"     = "1"
-    "kubernetes.io/cluster/demo" = "owned"
+    "kubernetes.io/cluster/huskerly-cluster" = "owned"
   }
 }
 
