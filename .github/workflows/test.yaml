@@ -1,0 +1,40 @@
+name: Deploy user microservice to EKS
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Github Repo
+        uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: "Install terraform"
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Install kustomize
+        run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::058264409130:role/github-role
+          aws-region: us-east-2
+          role-session-name: OIDCSession
+
+      - name: Relay terraform state file outputs
+        id: terraform
+        run: |
+          cd terraform
+          terraform init
+          echo "user-repo-arn=$(terraform output -raw user-repo-arn)"
+
+permissions:
+  id-token: write
+  contents: read

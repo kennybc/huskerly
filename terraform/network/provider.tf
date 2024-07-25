@@ -1,8 +1,3 @@
-# Configure AWS provider
-provider "aws" {
-  region = "us-east-2"
-}
-
 terraform {
   required_providers {
     aws = {
@@ -10,6 +5,7 @@ terraform {
       version = "5.6.2"
     }
   }
+
   backend "s3" {
     bucket         = "huskerly-terraform-state"
     dynamodb_table = "huskerly-terraform-lock"
@@ -17,4 +13,8 @@ terraform {
     region         = "us-east-2"
     encrypt        = true
   }
+}
+
+provider "aws" {
+  region = "us-east-2"
 }

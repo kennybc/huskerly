@@ -1,22 +1,5 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "5.6.2"
-    }
-  }
-}
-
-provider "aws" {
-  region = "us-east-2"
-}
-
 resource "aws_s3_bucket" "huskerly-terraform-state" {
   bucket = "huskerly-terraform-state"
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 # enable versioning in our S3 bucket

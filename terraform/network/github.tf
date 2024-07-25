@@ -1,11 +1,3 @@
-data "terraform_remote_state" "state" {
-  backend = "local"
-
-  config = {
-    path = "./state/terraform.tfstate"
-  }
-}
-
 # Github actions provider
 resource "aws_iam_openid_connect_provider" "github-provider" {
   url = "https://token.actions.githubusercontent.com"
@@ -55,7 +47,7 @@ data "aws_iam_policy_document" "github-policy-doc" {
       "s3:GetObject",
       "s3:PutObject",
     ]
-    resources = [data.terraform_remote_state.state.outputs.s3-arn]
+    resources = [var.s3-arn]
   }
 
   statement {
@@ -66,7 +58,7 @@ data "aws_iam_policy_document" "github-policy-doc" {
       "dynamodb:PutItem",
       "dynamodb:DeleteItem"
     ]
-    resources = [data.terraform_remote_state.state.outputs.dyanodb-arn]
+    resources = [var.dynamodb-arn]
   }
 
   statement {
