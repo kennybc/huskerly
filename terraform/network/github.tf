@@ -47,7 +47,7 @@ data "aws_iam_policy_document" "github-policy-doc" {
       "s3:GetObject",
       "s3:PutObject",
     ]
-    resources = [var.s3-arn]
+    resources = ["${var.s3-arn}/terraform.tfstate"]
   }
 
   statement {
