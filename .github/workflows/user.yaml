@@ -60,7 +60,8 @@ jobs:
 
       - name: Deploy to EKS
         run: |
-          kubectl apply -k k8s/user
+          cat k8s/user/kustomization.yaml
+        #kubectl apply -k k8s/user
 
 permissions:
   id-token: write
