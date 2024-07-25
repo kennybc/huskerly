@@ -107,8 +107,19 @@ resource "aws_iam_role_policy_attachment" "github-policy" {
 }
 
 # Github actions to cluster access entry
-resource "aws_eks_access_entry" "example" {
+resource "aws_eks_access_entry" "github-access-entry" {
   cluster_name = aws_eks_cluster.huskerly-cluster.name
   principal_arn = aws_iam_role.github-role.arn
   type = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "github-access-policy" {
+  cluster_name  = aws_eks_cluster.huskerly-cluster.name
+  principal_arn = aws_iam_role.github-role.arn
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSEditPolicy"
+
+  access_scope {
+    type       = "namespace"
+    namespaces = ["huskerly"]
+  }
 }
