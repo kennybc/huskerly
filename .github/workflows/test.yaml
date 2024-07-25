@@ -46,9 +46,8 @@ jobs:
       - name: Kustomize deployment with latest tag
         run: |
           IMAGE_TAG=${{ github.sha }}
-          USER_IMAGE_REPO=${{ steps.terraform.outputs.huskerly-user-service-repo }}
-          sed -i "s|IMAGE_TAG|${IMAGE_TAG}|g" k8s/user/kustomization.yaml
-          sed -i "s|USER_IMAGE_REPO|${USER_IMAGE_REPO}|g" k8s/user/kustomization.yaml
+          USER_IMAGE_REPO=${{ steps.terraform.outputs.user-repo-arn }}
+          sed -i "s|IMAGE_TAG|${IMAGE_TAG}|g" -i "s|USER_IMAGE_REPO|${USER_IMAGE_REPO}|g" k8s/user/kustomization.yaml
           cat k8s/user/kustomization.yaml
 
 permissions:
