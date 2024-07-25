@@ -31,7 +31,7 @@ jobs:
       - name: Relay terraform state file outputs
         id: terraform
         run: |
-          cd terraform
+          cd terraform/network
           terraform init
           echo "user-repo-arn=$(terraform output -raw user-repo-arn)"
 
