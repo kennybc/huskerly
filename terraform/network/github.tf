@@ -64,17 +64,17 @@ data "aws_iam_policy_document" "github-policy-doc" {
   statement {
     effect  = "Allow"
     actions = [
-      "ecr:GetAuthorizationToken",
+      "eks:DescribeCluster",
     ]
-    resources = ["*"]
+    resources = [aws_eks_cluster.huskerly-cluster.arn]
   }
 
   statement {
     effect  = "Allow"
     actions = [
-      "eks:DescribeCluster",
+      "ecr:GetAuthorizationToken",
     ]
-    resources = [aws_eks_cluster.huskerly-cluster.arn]
+    resources = ["*"]
   }
 
   statement {
@@ -104,4 +104,11 @@ resource "aws_iam_policy" "github-policy" {
 resource "aws_iam_role_policy_attachment" "github-policy" {
   role = aws_iam_role.github-role.name
   policy_arn = aws_iam_policy.github-policy.arn
+}
+
+# Github actions to cluster access entry
+resource "aws_eks_access_entry" "example" {
+  cluster_name = aws_eks_cluster.huskerly-cluster.name
+  principal_arn = aws_iam_role.github-role.arn
+  type = "STANDARD"
 }
