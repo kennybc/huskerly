@@ -5,4 +5,4 @@ app = FastAPI()
 
 @app.get("/")
 def get_root():
-    return {"name": "ms-user", "data": "2"}
+    return {"name": "ms-user", "data": "3"}

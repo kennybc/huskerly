@@ -5,4 +5,4 @@ app = FastAPI()
 
 @app.get("/")
 def get_root():
-    return {"name": "ms-upload", "data": "2"}
+    return {"name": "ms-upload", "data": "3"}
