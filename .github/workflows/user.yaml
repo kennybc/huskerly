@@ -2,8 +2,8 @@ name: Deploy user microservice to EKS
 
 on:
   push:
-    branches:
-      - "main"
+    paths:
+      - "services/upload"
 
 jobs:
   deploy-user:
