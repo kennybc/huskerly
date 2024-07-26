@@ -15,19 +15,19 @@ data "aws_iam_policy_document" "github-role-doc" {
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
     principals {
-      type        = "Federated"
+      type = "Federated"
       identifiers = [aws_iam_openid_connect_provider.github-provider.arn]
     }
 
     condition {
-      test     = "StringEquals"
-      values   = ["sts.amazonaws.com"]
+      test = "StringEquals"
+      values = ["sts.amazonaws.com"]
       variable = "token.actions.githubusercontent.com:aud"
     }
 
     condition {
-      test     = "StringLike"
-      values   = ["repo:kennybc/*"]
+      test = "StringLike"
+      values = ["repo:kennybc/*"]
       variable = "token.actions.githubusercontent.com:sub"
     }
   }
@@ -116,10 +116,10 @@ resource "aws_eks_access_entry" "github-access-entry" {
 resource "aws_eks_access_policy_association" "github-access-policy" {
   cluster_name  = aws_eks_cluster.huskerly-cluster.name
   principal_arn = aws_iam_role.github-role.arn
-  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSEditPolicy"
+  policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSEditPolicy"
 
   access_scope {
-    type       = "namespace"
+    type = "namespace"
     namespaces = ["huskerly"]
   }
 }

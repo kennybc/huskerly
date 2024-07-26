@@ -7,11 +7,11 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "huskerly-terraform-state"
+    bucket = "huskerly-terraform-state"
     dynamodb_table = "huskerly-terraform-lock"
-    key            = "terraform.tfstate"
-    region         = "us-east-2"
-    encrypt        = true
+    key = "terraform.tfstate"
+    region = "us-east-2"
+    encrypt = true
   }
 }
 

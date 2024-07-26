@@ -23,13 +23,13 @@ POLICY
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment
 resource "aws_iam_role_policy_attachment" "huskerly-role-terraform-AmazonEKSClusterPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.huskerly-role-terraform.name
+  role = aws_iam_role.huskerly-role-terraform.name
 }
 
 # Resource: aws_eks_cluster
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_cluster
 resource "aws_eks_cluster" "huskerly-cluster" {
-  name     = "huskerly-cluster"
+  name = "huskerly-cluster"
   role_arn = aws_iam_role.huskerly-role-terraform.arn
 
   vpc_config {

@@ -6,5 +6,5 @@ resources:
 
 images:
   - name: message-image
-    newName: MESSAGE_IMAGE_REPO
+    newName: IMAGE_REPO
     newTag: IMAGE_TAG

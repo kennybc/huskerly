@@ -6,5 +6,5 @@ resources:
 
 images:
   - name: user-image
-    newName: USER_IMAGE_REPO
+    newName: IMAGE_REPO
     newTag: IMAGE_TAG
