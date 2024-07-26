@@ -24,7 +24,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: huskerly-user-public-lb
+  name: huskerly-user-lb
   namespace: huskerly
   labels:
     app: huskerly-user
