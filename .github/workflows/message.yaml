@@ -1,15 +1,15 @@
-name: Deploy user microservice to EKS
+name: Deploy message microservice to EKS
 
 on:
   push:
     paths:
-      - "services/upload"
+      - "services/message"
 
 jobs:
-  deploy-user-service:
+  deploy-message-service:
     uses: ./.github/workflows/deploy.yaml
     with:
-      service: user
+      service: message
     permissions:
       id-token: write
       contents: read
