@@ -3,7 +3,7 @@ name: Deploy upload microservice to EKS
 on:
   push:
     paths:
-      - "services/upload"
+      - "services/upload/**"
 
 jobs:
   deploy-upload-service:

@@ -3,7 +3,7 @@ name: Deploy message microservice to EKS
 on:
   push:
     paths:
-      - "services/message"
+      - "services/message/**"
 
 jobs:
   deploy-message-service:
