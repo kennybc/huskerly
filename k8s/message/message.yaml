@@ -24,7 +24,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: huskerly-message-service
+  name: huskerly-message-public-lb
   namespace: huskerly
   labels:
     app: huskerly-message
