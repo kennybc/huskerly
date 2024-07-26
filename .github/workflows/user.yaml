@@ -6,7 +6,10 @@ on:
       - "main"
 
 jobs:
-  deploy:
+  deploy-user:
     uses: ./.github/workflows/deploy.yaml
     with:
       service: user
+    permissions:
+      id-token: write
+      contents: read
