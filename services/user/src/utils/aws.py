@@ -3,6 +3,8 @@ import boto3
 import os
 from datetime import datetime, timezone, timedelta
 # load_dotenv()
+import json
+from botocore.exceptions import ClientError
 
 global_session_info = {'session': None, 'expiry': None}
 session_duration = 1200  # How many seconds a session is valid for
@@ -50,3 +52,18 @@ def assume_role():
     global_session_info['session'] = session
     global_session_info['expiry'] = expiry
     return session
+
+
+def get_aws_secret(secret_name):
+    # Create a Secrets Manager client
+    session = assume_role()
+    client = session.client(service_name='secretsmanager')
+
+    try:
+        get_secret_value_response = client.get_secret_value(
+            SecretId=secret_name)
+    except ClientError as e:
+        raise e
+    else:
+        secret = get_secret_value_response['SecretString']
+        return json.loads(secret)
