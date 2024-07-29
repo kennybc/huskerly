@@ -1,5 +1,5 @@
-from src.utils.connect import connect_to_invites_database
-from src.utils.aws import assume_role, get_aws_secret
+from utils.connect import connect_to_invites_database
+from utils.aws import assume_role, get_aws_secret
 from datetime import datetime, timedelta
 
 pool_id = get_aws_secret("huskerly_userpool_id")["id"]

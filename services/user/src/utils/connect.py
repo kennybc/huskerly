@@ -1,5 +1,5 @@
 from psycopg2 import pool
-from src.utils.aws import get_aws_secret
+from utils.aws import get_aws_secret
 
 
 def init_connection_pool(dbname):
