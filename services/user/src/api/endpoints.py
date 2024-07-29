@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Header, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 from core.user import get_all_users_from_userpool, get_user_from_userpool, get_user_permission_level, request_org, update_org_request, list_invites, join_org, invite_org
+from utils.connect import run_sql_file
 
 router = APIRouter()
 
@@ -11,6 +12,15 @@ def get_session_token(session_token: str = Header(...)):
         raise HTTPException(status_code=400, detail="Session token missing")
     # TODO: add logic to validate the session token here
     return session_token
+
+
+@router.put("/db_reset", response_model=str)
+def reset_db():
+    try:
+        run_sql_file("db/invitesdb.sql")
+        return "Database reset successfully"
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/users", response_model=List[dict])

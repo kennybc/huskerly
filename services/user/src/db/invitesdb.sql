@@ -1,4 +1,16 @@
--- CREATE DATABASE huskerlyinvites;
+DROP DATABASE IF EXISTS invitesdb;
+
+CREATE DATABASE invitesdb;
+
+-- drop type if exists public.org_request_status;
+--
+-- drop table if exists public.organization_invites;
+--
+-- drop table if exists public.organization_requests;
+--
+-- drop table if exists public.organization_lost_privileges;
+
+
 
 CREATE TABLE IF NOT EXISTS organization_invites (
     user_email TEXT,
@@ -10,7 +22,7 @@ CREATE TABLE IF NOT EXISTS organization_invites (
     PRIMARY KEY (user_email, org_id)
 );
 
--- CREATE TYPE org_request_status AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
+CREATE TYPE org_request_status AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 
 CREATE TABLE organization_requests (
     org_name TEXT NOT NULL,
@@ -19,12 +31,3 @@ CREATE TABLE organization_requests (
     status org_request_status DEFAULT 'PENDING' NOT NULL,
     PRIMARY KEY (org_name, created_by_email)
 );
-
--- CREATE TABLE organization_lost_privileges (
---     org_id INT,
---     user_email TEXT UNIQUE NOT NULL,
---     lost_date TIMESTAMP DEFAULT NOW(),
---     active BOOLEAN NOT NULL,
---     PRIMARY KEY (org_id, user_email)
--- --     FOREIGN KEY (org_id) REFERENCES organizations(id)
--- );
