@@ -3,7 +3,7 @@ from utils.aws import get_aws_secret
 
 
 def init_connection_pool(dbname):
-    secret_name = "huskerly_credentials"
+    secret_name = "huskerly-db-credentials"
     credentials = get_aws_secret(secret_name)
 
     connection_pool = pool.SimpleConnectionPool(
