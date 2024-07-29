@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Header, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-from services.user.src.core.user import get_all_users_from_userpool, get_user_from_userpool, get_user_permission_level, request_org, update_org_request, list_invites, join_org, invite_org
+from src.core.user import get_all_users_from_userpool, get_user_from_userpool, get_user_permission_level, request_org, update_org_request, list_invites, join_org, invite_org
 
 router = APIRouter()
 
