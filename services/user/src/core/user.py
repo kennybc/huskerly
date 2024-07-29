@@ -1,4 +1,4 @@
-from utils.connect import connect_to_invites_database
+from services.user.src.utils.connect import connect_to_invites_database
 from services.user.src.utils.aws import assume_role, get_aws_secret
 from datetime import datetime, timedelta
 

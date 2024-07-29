@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from api import endpoints
+from services.user.src.api import endpoints
 
 app = FastAPI()
 
