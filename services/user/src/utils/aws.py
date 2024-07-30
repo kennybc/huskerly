@@ -73,7 +73,8 @@ def get_aws_secret(secret_name):
     if session is None:
         raise Exception("Failed to assume role and create session")
 
-    client = session.client(service_name='secretsmanager')
+    client = session.client(
+        service_name='secretsmanager', region_name='us-east-2')
 
     try:
         get_secret_value_response = client.get_secret_value(
