@@ -1,4 +1,5 @@
-from psycopg2 import pool
+import mysql.connector
+from mysql.connector import pooling
 from utils.aws import get_aws_secret
 
 
@@ -6,17 +7,18 @@ def init_connection_pool(dbname):
     secret_name = "huskerly-db-credentials"
     credentials = get_aws_secret(secret_name)
     try:
-        connection_pool = pool.SimpleConnectionPool(
-            1,  # Minimum number of connections
-            20,  # Maximum number of connections
-            dbname=dbname,
+        connection_pool = pooling.MySQLConnectionPool(
+            pool_name="mypool",
+            pool_size=20,  # Maximum number of connections
+            pool_reset_session=True,
+            database=dbname,
             user=credentials['username'],
             password=credentials['password'],
             host=credentials['host'],
-            sslmode='require',
+            ssl_disabled=False,
         )
-    except:
-        print("Error initializing connection pool")
+    except mysql.connector.Error as err:
+        print(f"Error initializing connection pool: {err}")
         return None
     return connection_pool
 
@@ -29,20 +31,5 @@ def connect_to_invites_database():
 
     if not invites_connection_pool:
         invites_connection_pool = init_connection_pool("invitesdb")
-    conn = invites_connection_pool.getconn()
+    conn = invites_connection_pool.get_connection()
     return conn
-
-
-def run_sql_file(file_path):
-    conn = connect_to_invites_database()
-    try:
-        with conn.cursor() as cursor:
-            with open(file_path, 'r') as file:
-                sql = file.read()
-                cursor.execute(sql)
-                conn.commit()
-    except Exception as e:
-        conn.rollback()
-        print(f"Error executing SQL file: {e}")
-    finally:
-        invites_connection_pool.putconn(conn)
