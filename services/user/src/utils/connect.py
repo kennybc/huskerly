@@ -5,16 +5,19 @@ from utils.aws import get_aws_secret
 def init_connection_pool(dbname):
     secret_name = "huskerly-db-credentials"
     credentials = get_aws_secret(secret_name)
-
-    connection_pool = pool.SimpleConnectionPool(
-        1,  # Minimum number of connections
-        20,  # Maximum number of connections
-        dbname=dbname,
-        user=credentials['username'],
-        password=credentials['password'],
-        host=credentials['host'],
-        sslmode='require',
-    )
+    try:
+        connection_pool = pool.SimpleConnectionPool(
+            1,  # Minimum number of connections
+            20,  # Maximum number of connections
+            dbname=dbname,
+            user=credentials['username'],
+            password=credentials['password'],
+            host=credentials['host'],
+            sslmode='require',
+        )
+    except:
+        print("Error initializing connection pool")
+        return None
     return connection_pool
 
 
