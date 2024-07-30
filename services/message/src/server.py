@@ -1,21 +1,18 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from sockets import ConnectionManager
+from fastapi import Request, FastAPI
 
 app = FastAPI()
-manager = ConnectionManager()
+connections = []
 
 @app.get("/")
 def get_root():
     return {"name": "ms-message", "data": "3"}
 
-@app.websocket("/ws/{client_id}")
-async def websocket_endpoint(websocket: WebSocket, client_id: int):
-    await manager.connect(websocket)
-    try:
-        while True:
-            data = await websocket.receive_text()
-            await manager.send_personal_message(f"You wrote: {data}", websocket)
-            await manager.broadcast(f"Client #{client_id} says: {data}")
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-        await manager.broadcast(f"Client #{client_id} left the chat")
+@app.get("/ws/connect")
+async def ws_connect(req: Request):
+    body = await req.json()
+    print(body)
+
+@app.get("/ws/disconnect")
+async def ws_disconnect(req: Request):
+    body = await req.json()
+    print(body)
