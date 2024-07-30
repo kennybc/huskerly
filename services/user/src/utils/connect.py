@@ -31,5 +31,9 @@ def connect_to_invites_database():
 
     if not invites_connection_pool:
         invites_connection_pool = init_connection_pool("invitesdb")
+
+    if invites_connection_pool is None:
+        raise ValueError("Failed to initialize connection pool")
+
     conn = invites_connection_pool.get_connection()
     return conn
