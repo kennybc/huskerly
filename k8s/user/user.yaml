@@ -4,7 +4,7 @@ metadata:
   name: huskerly-user-sa
   namespace: huskerly
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::058264409130:role/UserServiceRole
+    eks.amazonaws.com/role-arn: arn:aws:iam::058264409130:role/huskerly-role-user
 ---
 apiVersion: apps/v1
 kind: Deployment
