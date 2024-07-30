@@ -287,8 +287,7 @@ def invite_org(org_id, invitee_email, inviter_email, lifetime=86400):
             """
             INSERT INTO organization_invites (org_id, user_email, created_by_email, expiration_date)
             VALUES (%s, %s, %s, %s)
-            ON CONFLICT (org_id, user_email)
-            DO UPDATE SET expiration_date = EXCLUDED.expiration_date;
+            ON DUPLICATE KEY UPDATE expiration_date = VALUES(expiration_date);
             """, (org_id, invitee_email, inviter_email, expiration_date))
         conn.commit()
         print(f"""{inviter_email} invited user {
