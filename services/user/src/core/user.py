@@ -117,8 +117,8 @@ def request_org(org_name, creator_email):
         print(f"""organization request for {
               org_name} created by user {creator_email}""")
     except Exception as e:
-        print(f"""An error occurred: {e}""")
         conn.rollback()
+        raise Exception(f"""An error occurred: {e}""")
     finally:
         cursor.close()
         conn.close()
@@ -152,8 +152,8 @@ def update_org_request(org_name, current_user_email, status):
         conn.commit()
         print(f"""organization request for {org_name} updated to {status}""")
     except Exception as e:
-        print(f"""An error occurred: {e}""")
         conn.rollback()
+        raise Exception(f"""An error occurred: {e}""")
     finally:
         cursor.close()
         conn.close()
@@ -171,7 +171,7 @@ def list_invites(user_email):
             """, (user_email,))
         invites = cursor.fetchall()
     except Exception as e:
-        print(f"""An error occurred: {e}""")
+        raise Exception(f"""An error occurred: {e}""")
     finally:
         cursor.close()
         conn.close()
@@ -252,8 +252,8 @@ def join_org(org_id, user_email):
         conn.commit()
         print(f"""organization with id {org_id} joined by user {user_email}""")
     except Exception as e:
-        print(f"""An error occurred: {e}""")
         conn.rollback()
+        raise Exception(f"""An error occurred: {e}""")
     finally:
         cursor.close()
         conn.close()
@@ -294,8 +294,8 @@ def invite_org(org_id, invitee_email, inviter_email, lifetime=86400):
         print(f"""{inviter_email} invited user {
               invitee_email} to organization with id {org_id}""")
     except Exception as e:
-        print(f"""An error occurred: {e}""")
         conn.rollback()
+        raise Exception(f"""An error occurred: {e}""")
     finally:
         cursor.close()
         conn.close()
