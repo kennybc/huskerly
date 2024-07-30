@@ -16,3 +16,4 @@ terraform.rc
 secrets
 
 **/*.env
+**/.venv/

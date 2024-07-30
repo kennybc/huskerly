@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: huskerly-rds-db
+spec:
+  type: ExternalName
+  externalName: huskerly-db.che2wqk4qebu.us-east-2.rds.amazonaws.com
