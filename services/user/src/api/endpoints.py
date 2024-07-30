@@ -5,6 +5,7 @@ from core.user import get_all_users_from_userpool, get_user_from_userpool, get_u
 
 router = APIRouter()
 
+
 def get_session_token(session_token: str = Header(...)):
     if not session_token:
         raise HTTPException(status_code=400, detail="Session token missing")
@@ -20,32 +21,40 @@ def get_all_users():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 class UserRequest(BaseModel):
     user_email: str
-    
+
+
 @router.get("/users/{user_email}", response_model=dict)
-def get_user(request: UserRequest): # TODO: use session token , session_token: str = Depends(get_session_token)
+# TODO: use session token , session_token: str = Depends(get_session_token)
+def get_user(request: UserRequest):
     try:
         user = get_user_from_userpool(request.user_email)
         return user
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 class PermissionRequest(BaseModel):
     org_id: Optional[int] = None
-    
+
+
 @router.get("/users/{user_email}/permission", response_model=str)
-def get_permission(user_email: str, request: PermissionRequest): #TODO: should use session token
+# TODO: should use session token
+def get_permission(user_email: str, request: PermissionRequest):
     try:
         permission = get_user_permission_level(user_email, request.org_id)
         return permission
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 class OrgCreateRequest(BaseModel):
     org_name: str
     creator_email: str
-    
+
+
 @router.post("/org/request", response_model=str)
 def request_organization(request: OrgCreateRequest):
     try:
@@ -54,10 +63,12 @@ def request_organization(request: OrgCreateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 class OrgApproveRequest(BaseModel):
     org_name: str
-    current_user_email: str #TODO: should use session token
+    current_user_email: str  # TODO: should use session token
     creator_email: str
+
 
 @router.put("/org/request", response_model=str)
 def update_organization_request(request: OrgApproveRequest):
@@ -77,9 +88,11 @@ def list_user_invites(user_email: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 class JoinRequest(BaseModel):
     org_id: int
     user_email: str
+
 
 @router.post("/org/join", response_model=int)
 def join_organization(request: JoinRequest):
@@ -89,12 +102,14 @@ def join_organization(request: JoinRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 class InviteRequest(BaseModel):
     org_id: int
     invitee_email: str
     inviter_email: str
     lifetime: Optional[int] = 86400
-    
+
+
 @router.post("/org/invite", response_model=int)
 def invite_to_organization(invite_request: InviteRequest):
     try:
