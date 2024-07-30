@@ -11,13 +11,12 @@ session_duration = 1200  # How many seconds a session is valid for
 
 
 def get_current_iam_role(sts_client):
-    try:
-        identity = sts_client.get_caller_identity()
-        print(f"Account: {identity['Account']}")
-        print(f"UserId: {identity['UserId']}")
-        print(f"ARN: {identity['Arn']}")
-    except Exception as e:
-        print(f"Error getting caller identity: {e}")
+
+    identity = sts_client.get_caller_identity()
+    print(f"Account: {identity['Account']}")
+    print(f"UserId: {identity['UserId']}")
+    print(f"ARN: {identity['Arn']}")
+
     return identity
 
 
