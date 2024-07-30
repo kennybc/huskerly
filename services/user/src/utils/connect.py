@@ -27,13 +27,24 @@ invites_connection_pool = None
 
 
 def connect_to_invites_database():
-    global invites_connection_pool
+    # global invites_connection_pool
 
-    if not invites_connection_pool:
-        invites_connection_pool = init_connection_pool("huskerlyinvitesdb")
+    # if not invites_connection_pool:
+    #     invites_connection_pool = init_connection_pool("huskerlyinvitesdb")
 
-    if invites_connection_pool is None:
-        raise ValueError("Failed to initialize connection pool")
+    # if invites_connection_pool is None:
+    #     raise ValueError("Failed to initialize connection pool")
 
-    conn = invites_connection_pool.get_connection()
+    # conn = invites_connection_pool.get_connection()
+
+    secret_name = "huskerly-db-credentials"
+    credentials = get_aws_secret(secret_name)
+
+    conn = mysql.connector.connect(
+        database="huskerlyinvitesdb",
+        user=credentials['username'],
+        password=credentials['password'],
+        host=credentials['host'],
+        ssl_disabled=False,
+    )
     return conn
