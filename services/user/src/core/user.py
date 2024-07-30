@@ -274,10 +274,10 @@ def invite_org(org_id, invitee_email, inviter_email, lifetime=86400):
             raise Exception(
                 f"""user {inviter_email} is not authorized to invite to this organization.""")
 
-        invitee = get_user_from_userpool(invitee_email)
-        if invitee is None:
-            raise Exception(f"""Invited user {
-                            invitee_email} does not exist.""")
+        # invitee = get_user_from_userpool(invitee_email)
+        # if invitee is None:
+        #     raise Exception(f"""Invited user {
+        #                     invitee_email} does not exist.""")
 
         # Calculate expiration date
         expiration_date = datetime.now() + timedelta(seconds=lifetime)
