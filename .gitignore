@@ -15,4 +15,4 @@ terraform.rc
 .terraform.lock.hcl
 
 **/*.env
-.venv/
+**/.venv/
