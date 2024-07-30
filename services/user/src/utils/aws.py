@@ -10,6 +10,17 @@ global_session_info = {'session': None, 'expiry': None}
 session_duration = 1200  # How many seconds a session is valid for
 
 
+def get_current_iam_role(sts_client):
+    try:
+        identity = sts_client.get_caller_identity()
+        print(f"Account: {identity['Account']}")
+        print(f"UserId: {identity['UserId']}")
+        print(f"ARN: {identity['Arn']}")
+    except Exception as e:
+        print(f"Error getting caller identity: {e}")
+    return identity
+
+
 def assume_role():
     global global_session_info
 
@@ -32,6 +43,7 @@ def assume_role():
     # else:
     # Running in AWS, assume the user service role
     sts_client = boto3.client('sts', region_name='us-east-2')
+    identity = get_current_iam_role(sts_client)
     try:
         assumed_role = sts_client.assume_role(
             RoleArn="arn:aws:iam::058264409130:role/UserServiceRole",
