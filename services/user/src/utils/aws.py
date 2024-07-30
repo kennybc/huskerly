@@ -14,8 +14,8 @@ def assume_role():
     global global_session_info
 
     # Check if at least 5 minutes remain before the session expires
-    if global_session_info['session'] and datetime.now(timezone.utc) + timedelta(minutes=5) < global_session_info['expiry']:
-        return global_session_info['session']
+    # if global_session_info['session'] and datetime.now(timezone.utc) + timedelta(minutes=5) < global_session_info['expiry']:
+    #     return global_session_info['session']
 
     # Otherwise: proceed to create a new session
 
