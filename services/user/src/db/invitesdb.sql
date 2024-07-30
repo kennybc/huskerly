@@ -1,30 +1,95 @@
--- CREATE DATABASE huskerlyinvites;
+DROP DATABASE IF EXISTS huskerlymessagingdb;
 
-CREATE TABLE IF NOT EXISTS organization_invites (
-    user_email TEXT,
-    org_id INT,
-    created_by_email TEXT NOT NULL,
-    created_date TIMESTAMP DEFAULT NOW(),
-    expiration_date TIMESTAMP DEFAULT NOW() + INTERVAL '1 week',
+CREATE DATABASE huskerlymessagingdb;
+
+USE huskerlymessagingdb;
+
+CREATE TABLE organizations (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
     active BOOLEAN DEFAULT TRUE NOT NULL,
-    PRIMARY KEY (user_email, org_id)
-);
-
--- CREATE TYPE org_request_status AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
-
-CREATE TABLE organization_requests (
-    org_name TEXT NOT NULL,
-    created_by_email TEXT NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
-    status org_request_status DEFAULT 'PENDING' NOT NULL,
-    PRIMARY KEY (org_name, created_by_email)
+    created_by_email TEXT NOT NULL,
+    lead_admin_email TEXT UNIQUE NOT NULL
 );
 
--- CREATE TABLE organization_lost_privileges (
---     org_id INT,
---     user_email TEXT UNIQUE NOT NULL,
---     lost_date TIMESTAMP DEFAULT NOW(),
---     active BOOLEAN NOT NULL,
---     PRIMARY KEY (org_id, user_email)
--- --     FOREIGN KEY (org_id) REFERENCES organizations(id)
--- );
+CREATE TABLE teams (
+    id SERIAL PRIMARY KEY,
+    name TEXT,
+    created_date TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE chats (
+    id SERIAL PRIMARY KEY,
+    chat_type ENUM('stream', 'direct_message') NOT NULL,
+    name TEXT,
+    created_date TIMESTAMP DEFAULT NOW(),
+    public BOOLEAN NOT NULL,
+    team_id INT,
+    org_id INT,
+    FOREIGN KEY (team_id) REFERENCES teams(id),
+    FOREIGN KEY (org_id) REFERENCES organizations(id),
+    CHECK (
+        (chat_type = 'stream' AND team_id IS NOT NULL AND org_id IS NULL) OR
+        (chat_type = 'direct_message' AND org_id IS NOT NULL AND team_id IS NULL)
+    )
+);
+
+CREATE TABLE team_users (
+    user_email TEXT,
+    team_id INT,
+    joined_at TIMESTAMP DEFAULT NOW(),
+    PRIMARY KEY (user_email, team_id),
+    FOREIGN KEY (team_id) REFERENCES teams(id)
+);
+
+CREATE TABLE chat_users (
+    user_email TEXT,
+    chat_id INT,
+    joined_at TIMESTAMP DEFAULT NOW(),
+    PRIMARY KEY (user_email, chat_id),
+    FOREIGN KEY (chat_id) REFERENCES chats(id)
+);
+
+CREATE TABLE posts (
+    id SERIAL PRIMARY KEY,
+    user_email TEXT NOT NULL,
+    parent_post_id INT,
+    chat_id INT NOT NULL,
+    content TEXT,
+    created_date TIMESTAMP DEFAULT NOW(),
+    visible BOOLEAN DEFAULT TRUE,
+    edited_at TIMESTAMP,
+    FOREIGN KEY (chat_id) REFERENCES chats(id)
+);
+
+CREATE TABLE reaction_types (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL
+);
+
+CREATE TABLE team_icons (
+    team_id INT,
+    url TEXT UNIQUE NOT NULL,
+    created_date TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY (team_id) REFERENCES teams(id)
+);
+
+CREATE TABLE post_reactions (
+    post_id INT,
+    user_email TEXT,
+    reaction_id INT NOT NULL,
+    created_date TIMESTAMP DEFAULT NOW(),
+    PRIMARY KEY (post_id, user_email),
+    FOREIGN KEY (post_id) REFERENCES posts(id),
+    FOREIGN KEY (reaction_id) REFERENCES reaction_types(id)
+);
+
+CREATE TABLE attachments (
+    id SERIAL PRIMARY KEY,
+    post_id INT,
+    url TEXT UNIQUE NOT NULL,
+    created_date TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY (post_id) REFERENCES posts(id)
+);
+
