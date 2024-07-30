@@ -19,6 +19,12 @@ async def ws_disconnect(req: Request):
     print(body)
     return {"status": 200}
 
+@app.post("/ws/unknown")
+async def ws_unknown(req: Request):
+    body = await req.json()
+    print(body)
+    return {"status": 404}
+
 @app.post("/ws/send")
 async def ws_send(req: Request):
     body = await req.json()
