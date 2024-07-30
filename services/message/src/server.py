@@ -1,6 +1,6 @@
 from fastapi import Request, FastAPI
 
-app = FastAPI()
+app = FastAPI(root_path="/message")
 connections = []
 
 @app.get("/")
