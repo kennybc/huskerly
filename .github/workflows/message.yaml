@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "services/message/**"
+  workflow_dispatch:
 
 jobs:
   deploy-message-service:

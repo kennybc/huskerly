@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "services/upload/**"
+  workflow_dispatch:
 
 jobs:
   deploy-upload-service:

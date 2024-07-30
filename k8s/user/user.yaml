@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: huskerly-user-sa
+  name: huskerly-sa-user
   namespace: huskerly
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::058264409130:role/UserServiceRole
+    eks.amazonaws.com/role-arn: arn:aws:iam::058264409130:role/huskerly-role-user
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -23,7 +23,7 @@ spec:
       labels:
         app: huskerly-user
     spec:
-    serviceAccountName: huskerly-user-sa
+      serviceAccountName: huskerly-sa-user
       containers:
         - name: huskerly-user
           image: user-image
