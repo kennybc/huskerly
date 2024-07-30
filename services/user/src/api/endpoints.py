@@ -14,15 +14,6 @@ def get_session_token(session_token: str = Header(...)):
     return session_token
 
 
-@router.put("/db_reset", response_model=str)
-def reset_db():
-    try:
-        run_sql_file("db/invitesdb.sql")
-        return "Database reset successfully"
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @router.get("/users", response_model=List[dict])
 def get_all_users():
     try:
