@@ -5,7 +5,7 @@ connections = []
 
 @app.get("/")
 def get_root():
-    return {"name": "ms-message", "data": "3"}
+    return {"name": "ms-message", "data": "4"}
 
 @app.post("/ws/connect")
 async def ws_connect(req: Request):

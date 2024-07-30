@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "services/user/**"
+  workflow_dispatch:
 
 jobs:
   deploy-user-service:
