@@ -16,3 +16,8 @@ async def ws_connect(req: Request):
 async def ws_disconnect(req: Request):
     body = await req.json()
     print(body)
+
+@app.get("/ws/send")
+async def ws_send(req: Request):
+    body = await req.json()
+    print(body)
