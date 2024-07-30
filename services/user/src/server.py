@@ -8,4 +8,4 @@ app.include_router(endpoints.router)
 
 @app.get("/")
 def get_root():
-    return {"name": "ms-user-test-2", "data": "3"}
+    return {"name": "ms-user-test-3", "data": "3"}
