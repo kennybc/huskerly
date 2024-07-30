@@ -30,7 +30,7 @@ def connect_to_invites_database():
     global invites_connection_pool
 
     if not invites_connection_pool:
-        invites_connection_pool = init_connection_pool("invitesdb")
+        invites_connection_pool = init_connection_pool("huskerlyinvitesdb")
 
     if invites_connection_pool is None:
         raise ValueError("Failed to initialize connection pool")
