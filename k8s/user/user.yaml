@@ -15,7 +15,7 @@ spec:
       labels:
         app: huskerly-user
     spec:
-      serviceAccountName: huskerly-sa-user
+    serviceAccountName: huskerly-user-sa
       containers:
         - name: huskerly-user
           image: user-image
