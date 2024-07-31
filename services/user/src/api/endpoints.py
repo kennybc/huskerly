@@ -34,15 +34,11 @@ def get_user(user_email: str):
             status_code=500, detail=f"""Error getting user information: {str(e)}""")
 
 
-class PermissionRequest(BaseModel):
-    org_id: Optional[int] = None
-
-
-@router.get("/users/permission/{user_email}", response_model=str)
+@router.get("/users/permission/{user_email}/{org_id}", response_model=str)
 # TODO: should use session token
-def get_permission(user_email: str, request: PermissionRequest):
+def get_permission(user_email: str, org_id: Optional[int]):
     try:
-        permission = get_user_permission_level(user_email, request.org_id)
+        permission = get_user_permission_level(user_email, org_id)
         return permission
     except Exception as e:
         raise HTTPException(
