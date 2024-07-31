@@ -30,15 +30,10 @@ def get_aws_secret(secret_name):
     # Create a Secrets Manager client
     session = get_session()
     if session is None:
-        raise Exception("Failed to assume role and create session")
+        raise Exception("Failed to create session")
 
     client = session.client(
         service_name='secretsmanager', region_name='us-east-2')
 
-    try:
-        get_secret_value_response = client.get_secret_value(
-            SecretId=secret_name)
-        return json.loads(get_secret_value_response['SecretString'])
-    except ClientError as e:
-        print(f"Error retrieving secret: {e}")
-        return None
+    get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+    return json.loads(get_secret_value_response['SecretString'])
