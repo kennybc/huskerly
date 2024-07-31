@@ -1,6 +1,7 @@
 from utils.connect import connect_to_invites_database
 from utils.aws import assume_role, get_aws_secret
 from datetime import datetime, timedelta
+from typing import List, Optional
 
 pool_id = get_aws_secret("huskerly_userpool_id")["id"]
 
@@ -57,7 +58,7 @@ def get_user_attributes(user_response):
     return res
 
 
-def get_user_permission_level(user_email, org_id=None):
+def get_user_permission_level(user_email: str, org_id: Optional[int] = None):
     """
     Determines the permission level of a user within an organization.
 
@@ -101,7 +102,7 @@ def get_user_permission_level(user_email, org_id=None):
         return "NONE"
 
 
-def request_org(org_name, creator_email):
+def request_org(org_name: str, creator_email: str) -> str:
     conn = connect_to_invites_database()
     cursor = conn.cursor()
     request_status = None
@@ -125,7 +126,7 @@ def request_org(org_name, creator_email):
     return request_status
 
 
-def update_org_request(org_name, current_user_email, status):
+def update_org_request(org_name: str, current_user_email: str, status: str) -> str:
     conn = connect_to_invites_database()
     cursor = conn.cursor()
     try:
@@ -160,7 +161,7 @@ def update_org_request(org_name, current_user_email, status):
     return status
 
 
-def list_invites(user_email):
+def list_invites(user_email: str) -> List[dict]:
     conn = connect_to_invites_database()
     cursor = conn.cursor()
     try:
@@ -178,7 +179,7 @@ def list_invites(user_email):
     return invites
 
 
-def join_org(org_id, user_email):
+def join_org(org_id: int, user_email: str) -> int:
     conn = connect_to_invites_database()
     cursor = conn.cursor()
     try:
@@ -260,7 +261,7 @@ def join_org(org_id, user_email):
     return org_id
 
 
-def invite_org(org_id, invitee_email, inviter_email, lifetime=86400):
+def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: int = 86400):
     conn = connect_to_invites_database()
     cursor = conn.cursor()
     try:
