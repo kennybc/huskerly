@@ -71,7 +71,7 @@ def request_organization(request: OrgCreateRequest):
 class OrgApproveRequest(BaseModel):
     org_name: str
     current_user_email: str  # TODO: should use session token
-    creator_email: str
+    status: str
 
 
 @router.put("/org/request", response_model=str)

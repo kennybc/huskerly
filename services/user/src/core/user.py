@@ -134,18 +134,26 @@ def update_org_request(org_name: str, current_user_email: str, status: str) -> s
             raise Exception(
                 f"""user {current_user_email} is not authorized to update organization requests.""")
 
+        # check if org request exists
+        # TODO:
+        cursor.execute(
+            """
+            SELECT created_by_email FROM organization_requests
+            WHERE org_name = %s
+            """
+        )
+        creator_email = cursor.fetchone()[0]
+
+        if creator_email is None:
+            raise ValueError(f"""Organization request for {
+                             org_name} does not exist.""")
+
         cursor.execute(
             """
             UPDATE organization_requests
             SET status = %s
             WHERE org_name = %s
-            RETURNING created_by_email;
             """, (status, org_name))
-
-        creator_email = cursor.fetchone()[0]
-        if creator_email is None:
-            raise ValueError(f"""Organization request for {
-                             org_name} does not exist.""")
 
         # if status == "APPROVED":
         #     org_id = register_org(org_name, creator_email)
