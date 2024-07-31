@@ -1,4 +1,4 @@
-from utils.connect import connect_to_invites_database, get_cursor
+from utils.connect import get_cursor
 from utils.aws import get_session, get_aws_secret
 from datetime import datetime, timedelta
 from typing import List, Optional
@@ -103,7 +103,7 @@ def get_user_permission_level(user_email: str, org_id: Optional[int] = None):
 
 
 def request_org(org_name: str, creator_email: str) -> str:
-    with get_cursor() as (conn, cursor):
+    with get_cursor() as cursor:
         cursor.execute(
             """
             INSERT INTO organization_requests (org_name, created_by_email)
@@ -113,13 +113,13 @@ def request_org(org_name: str, creator_email: str) -> str:
         if cursor.rowcount == 1:
             request_status = "SUCCESS"
         else:
-            request_status = "FAILED"
+            request_status = "FAILED"  # TODO: this should be a more helpful message
 
         return request_status
 
 
 def update_org_request(org_name: str, current_user_email: str, status: str) -> str:
-    with get_cursor() as (conn, cursor):
+    with get_cursor() as cursor:
         if get_user_permission_level(current_user_email) != "SYS_ADMIN":
             raise Exception(
                 f"""User {current_user_email} is not authorized to update organization requests.""")
@@ -149,7 +149,7 @@ def update_org_request(org_name: str, current_user_email: str, status: str) -> s
 
 
 def list_invites(user_email: str) -> List[dict]:
-    with get_cursor() as (conn, cursor):
+    with get_cursor() as cursor:
         cursor.execute(
             """
             SELECT * FROM organization_invites
@@ -160,7 +160,7 @@ def list_invites(user_email: str) -> List[dict]:
 
 
 def join_org(org_id: int, user_email: str) -> int:
-    with get_cursor() as (conn, cursor):
+    with get_cursor() as cursor:
         # Check if the user is already a member of an organization
         invited_user = get_user_from_userpool(user_email)
         user_attributes = get_user_attributes(invited_user)
@@ -232,7 +232,7 @@ def join_org(org_id: int, user_email: str) -> int:
 
 
 def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: int = 86400):
-    with get_cursor() as (conn, cursor):
+    with get_cursor() as cursor:
         inviter = get_user_from_userpool(inviter_email)
         if inviter is None:
             raise Exception(
