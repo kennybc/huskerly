@@ -2,8 +2,15 @@ import mysql.connector
 from mysql.connector import pooling
 from utils.aws import get_aws_secret
 
+invites_connection_pool = None
+
 
 def init_connection_pool(dbname):
+    global invites_connection_pool
+
+    if invites_connection_pool:
+        return invites_connection_pool
+
     secret_name = "huskerly-db-credentials"
     credentials = get_aws_secret(secret_name)
     try:
@@ -18,23 +25,20 @@ def init_connection_pool(dbname):
             ssl_disabled=False,
         )
     except mysql.connector.Error as err:
-        print(f"Error initializing connection pool: {err}")
-        return None
-    return connection_pool
-
-
-invites_connection_pool = init_connection_pool("huskerlyinvitesdb")
+        print(f"Error initializing connection pool: {err}, trying again")
+        init_connection_pool(dbname)
+    finally:
+        invites_connection_pool = connection_pool
+    return invites_connection_pool
 
 
 def connect_to_invites_database():
-    # global invites_connection_pool
+    global invites_connection_pool
 
-    # if not invites_connection_pool:
-    #     invites_connection_pool = init_connection_pool("huskerlyinvitesdb")
+    if not invites_connection_pool:
+        init_connection_pool("huskerlyinvitesdb")
 
-    # if invites_connection_pool is None:
-    #     raise ValueError("Failed to initialize connection pool")
+    if invites_connection_pool is None:
+        raise ValueError("Failed to initialize connection pool")
 
-    conn = invites_connection_pool.get_connection()
-
-    return conn
+    return invites_connection_pool.get_connection()
