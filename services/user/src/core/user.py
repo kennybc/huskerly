@@ -169,7 +169,7 @@ def list_invites(user_email: str) -> List[dict]:
             """
             SELECT * FROM organization_invites
             WHERE user_email = %s;
-            """, (user_email))
+            """, (user_email,))
         invites = cursor.fetchall()
     except Exception as e:
         raise Exception(f"""An error occurred: {e}""")
