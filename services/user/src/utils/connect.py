@@ -11,7 +11,7 @@ def init_connection_pool(dbname):
     try:
         return pooling.MySQLConnectionPool(
             pool_name="mypool",
-            pool_size=32,  # Maximum number of connections
+            pool_size=16,  # Maximum number of connections
             pool_reset_session=True,
             database=dbname,
             user=credentials['username'],
