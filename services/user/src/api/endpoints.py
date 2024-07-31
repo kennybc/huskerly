@@ -20,7 +20,7 @@ def get_all_users():
         return users
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Error getting all users: {str(e)}")
+            status_code=500, detail=f"""Error getting all users: {str(e)}""")
 
 
 class UserRequest(BaseModel):
@@ -35,7 +35,7 @@ def get_user(request: UserRequest):
         return user
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Error getting user information: {str(e)}")
+            status_code=500, detail=f"""Error getting user information: {str(e)}""")
 
 
 class PermissionRequest(BaseModel):
@@ -50,7 +50,7 @@ def get_permission(user_email: str, request: PermissionRequest):
         return permission
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Error authenticating user permissions: {str(e)}")
+            status_code=500, detail=f"""Error authenticating user permissions: {str(e)}""")
 
 
 class OrgCreateRequest(BaseModel):
@@ -65,7 +65,7 @@ def request_organization(request: OrgCreateRequest):
         return status
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Error sending organization request: {str(e)}")
+            status_code=500, detail=f"""Error sending organization request: {str(e)}""")
 
 
 class OrgApproveRequest(BaseModel):
@@ -82,7 +82,7 @@ def update_organization_request(request: OrgApproveRequest):
         return status
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Error updating organization request: {str(e)}")
+            status_code=500, detail=f"""Error updating organization request: {str(e)}""")
 
 
 @router.get("/invites/{user_email}", response_model=List[dict])
@@ -91,8 +91,8 @@ def list_user_invites(user_email: str):
         invites = list_invites(user_email)
         return invites
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching invites for user {
-                            user_email}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"""Error fetching invites for user {
+                            user_email}: {str(e)}""")
 
 
 class JoinRequest(BaseModel):
@@ -107,7 +107,7 @@ def join_organization(request: JoinRequest):
         return org_id
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Error joining organization: {str(e)}")
+            status_code=500, detail=f"""Error joining organization: {str(e)}""")
 
 
 class InviteRequest(BaseModel):
@@ -125,4 +125,4 @@ def invite_to_organization(invite_request: InviteRequest):
         return org_id
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Error inviting to organization: {str(e)}")
+            status_code=500, detail=f"""Error inviting to organization: {str(e)}""")
