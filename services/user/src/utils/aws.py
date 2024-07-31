@@ -6,8 +6,8 @@ from datetime import datetime, timezone, timedelta
 import json
 from botocore.exceptions import ClientError
 
-# global_session_info = {'session': None, 'expiry': None}
-# session_duration = 1200  # How many seconds a session is valid for
+global_session_info = {'session': None, 'expiry': None}
+session_duration = 1200  # How many seconds a session is valid for
 
 
 # def get_current_iam_role(sts_client):
@@ -20,15 +20,27 @@ from botocore.exceptions import ClientError
 #     return identity
 
 
-def assume_role():
-    return boto3.Session()
-#     global global_session_info
+def get_session():
+    # return boto3.Session()
+    global global_session_info
 
-#     # Check if at least 5 minutes remain before the session expires
-#     # if global_session_info['session'] and datetime.now(timezone.utc) + timedelta(minutes=5) < global_session_info['expiry']:
-#     #     return global_session_info['session']
+    # Check if at least 5 minutes remain before the session expires
+    future_time = datetime.now(timezone.utc) + timedelta(minutes=5)
 
-#     # Otherwise: proceed to create a new session
+    if global_session_info['session'] and future_time < global_session_info['expiry']:
+        return global_session_info['session']
+
+    session = boto3.Session()
+
+    expiry_time = datetime.now(timezone.utc) + \
+        timedelta(seconds=session_duration)
+
+    global_session_info['session'] = session
+    global_session_info['expiry'] = expiry_time
+    return session
+
+    # Otherwise: proceed to create a new session
+
 
 #     # Check if running locally by looking for specific environment variables
 #     # if False and os.getenv('AWS_ACCESS_KEY_ID') and os.getenv('AWS_SECRET_ACCESS_KEY'):
@@ -61,14 +73,10 @@ def assume_role():
 #         print(f"Error assuming role: {e}")
 #         return None
 
-#     global_session_info['session'] = session
-#     global_session_info['expiry'] = expiry
-#     return session
-
 
 def get_aws_secret(secret_name):
     # Create a Secrets Manager client
-    session = assume_role()
+    session = get_session()
     if session is None:
         raise Exception("Failed to assume role and create session")
 
