@@ -114,14 +114,14 @@ def request_org(org_name: str, creator_email: str) -> str:
 
         if cursor.rowcount == 1:
             conn.commit()
-            print(f"Organization request for {
-                  org_name} created by user {creator_email}")
+            print(f"""Organization request for {
+                  org_name} created by user {creator_email}""")
             request_status = "SUCCESS"
         else:
             conn.rollback()
             request_status = "FAILED"
         conn.commit()
-        print(f"""organization request for {
+        print(f"""Organization request for {
               org_name} created by user {creator_email}""")
     except Exception as e:
         conn.rollback()
@@ -138,7 +138,7 @@ def update_org_request(org_name: str, current_user_email: str, status: str) -> s
     try:
         if get_user_permission_level(current_user_email) != "SYS_ADMIN":
             raise Exception(
-                f"""user {current_user_email} is not authorized to update organization requests.""")
+                f"""User {current_user_email} is not authorized to update organization requests.""")
 
         cursor.execute(
             """
