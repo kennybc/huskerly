@@ -1,4 +1,4 @@
-from utils.connect import connect_to_invites_database
+from utils.connect import connect_to_invites_database, get_cursor
 from utils.aws import get_session, get_aws_secret
 from datetime import datetime, timedelta
 from typing import List, Optional
@@ -103,9 +103,7 @@ def get_user_permission_level(user_email: str, org_id: Optional[int] = None):
 
 
 def request_org(org_name: str, creator_email: str) -> str:
-    conn = connect_to_invites_database()
-    cursor = conn.cursor()
-    try:
+    with get_cursor() as (conn, cursor):
         cursor.execute(
             """
             INSERT INTO organization_requests (org_name, created_by_email)
@@ -113,29 +111,15 @@ def request_org(org_name: str, creator_email: str) -> str:
             """, (org_name, creator_email))
 
         if cursor.rowcount == 1:
-            conn.commit()
-            print(f"""Organization request for {
-                  org_name} created by user {creator_email}""")
             request_status = "SUCCESS"
         else:
-            conn.rollback()
             request_status = "FAILED"
-        conn.commit()
-        print(f"""Organization request for {
-              org_name} created by user {creator_email}""")
-    except Exception as e:
-        conn.rollback()
-        raise Exception(f"""An error occurred: {e}""")
-    finally:
-        cursor.close()
-        conn.close()
-    return request_status
+
+        return request_status
 
 
 def update_org_request(org_name: str, current_user_email: str, status: str) -> str:
-    conn = connect_to_invites_database()
-    cursor = conn.cursor()
-    try:
+    with get_cursor() as (conn, cursor):
         if get_user_permission_level(current_user_email) != "SYS_ADMIN":
             raise Exception(
                 f"""User {current_user_email} is not authorized to update organization requests.""")
@@ -161,40 +145,22 @@ def update_org_request(org_name: str, current_user_email: str, status: str) -> s
 
         # if status == "APPROVED":
         #     org_id = register_org(org_name, creator_email)
-
-        conn.commit()
-        print(f"""organization request for {org_name} updated to {status}""")
-    except Exception as e:
-        conn.rollback()
-        raise Exception(f"""An error occurred: {e}""")
-    finally:
-        cursor.close()
-        conn.close()
-    return status
+        return status
 
 
 def list_invites(user_email: str) -> List[dict]:
-    conn = connect_to_invites_database()
-    cursor = conn.cursor()
-    try:
+    with get_cursor() as (conn, cursor):
         cursor.execute(
             """
             SELECT * FROM organization_invites
             WHERE user_email = %s;
             """, (user_email,))
         invites = cursor.fetchall()
-    except Exception as e:
-        raise Exception(f"""An error occurred: {e}""")
-    finally:
-        cursor.close()
-        conn.close()
-    return invites
+        return invites
 
 
 def join_org(org_id: int, user_email: str) -> int:
-    conn = connect_to_invites_database()
-    cursor = conn.cursor()
-    try:
+    with get_cursor() as (conn, cursor):
         # Check if the user is already a member of an organization
         invited_user = get_user_from_userpool(user_email)
         user_attributes = get_user_attributes(invited_user)
@@ -262,21 +228,11 @@ def join_org(org_id: int, user_email: str) -> int:
             raise Exception(f"""Failed to update user {
                             user_email} with organization {org_id} in Cognito.""")
 
-        conn.commit()
-        print(f"""organization with id {org_id} joined by user {user_email}""")
-    except Exception as e:
-        conn.rollback()
-        raise Exception(f"""An error occurred: {e}""")
-    finally:
-        cursor.close()
-        conn.close()
-    return org_id
+        return org_id
 
 
 def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: int = 86400):
-    conn = connect_to_invites_database()
-    cursor = conn.cursor()
-    try:
+    with get_cursor() as (conn, cursor):
         inviter = get_user_from_userpool(inviter_email)
         if inviter is None:
             raise Exception(
@@ -302,13 +258,5 @@ def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: in
             VALUES (%s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE expiration_date = VALUES(expiration_date);
             """, (org_id, invitee_email, inviter_email, expiration_date))
-        conn.commit()
-        print(f"""{inviter_email} invited user {
-              invitee_email} to organization with id {org_id}""")
-    except Exception as e:
-        conn.rollback()
-        raise Exception(f"""An error occurred: {e}""")
-    finally:
-        cursor.close()
-        conn.close()
-    return org_id
+
+        return org_id

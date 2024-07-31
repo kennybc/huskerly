@@ -1,6 +1,7 @@
 import mysql.connector
 from mysql.connector import pooling
 from utils.aws import get_aws_secret
+from contextlib import contextmanager
 
 invites_connection_pool = None
 
@@ -34,3 +35,18 @@ def connect_to_invites_database():
         raise ValueError("Failed to initialize connection pool")
 
     return invites_connection_pool.get_connection()
+
+
+@contextmanager
+def get_cursor():
+    conn = connect_to_invites_database()
+    cursor = conn.cursor()
+    try:
+        yield conn, cursor
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise Exception(f"An error occurred: {e}")
+    finally:
+        cursor.close()
+        conn.close()
