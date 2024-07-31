@@ -3,36 +3,43 @@ import json
 
 from db.secrets import get_secrets
 
+
 class DMHandler:
-  def __init__(self):
-    # Connect to backend websocket endpoint
-    secrets = get_secrets()
-    self.client = boto3.client("apigatewaymanagementapi", endpoint_url=secrets["ws_ep"])
+    def __init__(self):
+        # Connect to backend websocket endpoint
+        secrets = get_secrets()
+        self.client = boto3.client(
+            "apigatewaymanagementapi",
+            endpoint_url=secrets["ws_ep"],
+            region_name="us-east-2",
+        )
 
-    # DynamoDB table to track connections
-    self.table = boto3.resource("dynamodb").Table("huskerly-ws-connections")
+        # DynamoDB table to track connections
+        self.table = boto3.resource(
+            "dynamodb",
+            region_name="us-east-2",
+        ).Table("huskerly-ws-connections")
 
-  def add_connection(self, id):
-    self.table.put_item(Item={ "connection_id": id})
+    def add_connection(self, id):
+        self.table.put_item(Item={"connection_id": id})
 
-  def remove_connection(self, id):
-    self.table.delete_item(Item={ "connection_id": id})
+    def remove_connection(self, id):
+        self.table.delete_item(Item={"connection_id": id})
 
-  def send_dm(self, recipient, message):
-    try:
-      response = self.client.post_to_connection(
-          ConnectionId=recipient,
-          Data=json.dumps(message).encode('utf-8')
-      )
-      print(f"Message sent to connection ID {recipient}, Response: {response}")
+    def send_dm(self, recipient, message):
+        try:
+            response = self.client.post_to_connection(
+                ConnectionId=recipient, Data=json.dumps(message).encode("utf-8")
+            )
+            print(f"Message sent to connection ID {recipient}, Response: {response}")
 
-    except self.client.exceptions.GoneException:
-      print(f"Connection ID {recipient} is no longer available.")
+        except self.client.exceptions.GoneException:
+            print(f"Connection ID {recipient} is no longer available.")
 
-    except Exception as e:
-      print(f"Error sending message: {e}")
+        except Exception as e:
+            print(f"Error sending message: {e}")
 
-  def broadcast(self, message):
-    recipients = self.table.scan()["Items"]
-    for recipient in recipients:
-      self.send_dm(recipient, message)
+    def broadcast(self, message):
+        recipients = self.table.scan()["Items"]
+        for recipient in recipients:
+            self.send_dm(recipient, message)
