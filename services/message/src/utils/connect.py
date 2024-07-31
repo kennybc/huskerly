@@ -23,10 +23,10 @@ def init_connection_pool(dbname):
     return connection_pool
 
 
-invites_connection_pool = None
+messages_connection_pool = None
 
 
-def connect_to_invites_database():
+def connect_to_messages_database():
     # global invites_connection_pool
 
     # if not invites_connection_pool:

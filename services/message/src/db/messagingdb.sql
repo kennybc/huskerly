@@ -6,27 +6,27 @@ USE huskerlymessagingdb;
 
 CREATE TABLE organizations (
     id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
+    name VARCHAR(255) NOT NULL,
     active BOOLEAN DEFAULT TRUE NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
-    created_by_email TEXT NOT NULL,
-    lead_admin_email TEXT UNIQUE NOT NULL
+    created_by_email VARCHAR(255) NOT NULL,
+    lead_admin_email VARCHAR(255) UNIQUE NOT NULL
 );
 
 CREATE TABLE teams (
     id SERIAL PRIMARY KEY,
-    name TEXT,
+    name VARCHAR(255),
     created_date TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE chats (
     id SERIAL PRIMARY KEY,
     chat_type ENUM('stream', 'direct_message') NOT NULL,
-    name TEXT,
+    name VARCHAR(255),
     created_date TIMESTAMP DEFAULT NOW(),
     public BOOLEAN NOT NULL,
-    team_id INT,
-    org_id INT,
+    team_id BIGINT UNSIGNED,
+    org_id BIGINT UNSIGNED,
     FOREIGN KEY (team_id) REFERENCES teams(id),
     FOREIGN KEY (org_id) REFERENCES organizations(id),
     CHECK (
@@ -36,16 +36,16 @@ CREATE TABLE chats (
 );
 
 CREATE TABLE team_users (
-    user_email TEXT,
-    team_id INT,
+    user_email VARCHAR(255),
+    team_id BIGINT UNSIGNED,
     joined_at TIMESTAMP DEFAULT NOW(),
     PRIMARY KEY (user_email, team_id),
     FOREIGN KEY (team_id) REFERENCES teams(id)
 );
 
 CREATE TABLE chat_users (
-    user_email TEXT,
-    chat_id INT,
+    user_email VARCHAR(255),
+    chat_id BIGINT UNSIGNED,
     joined_at TIMESTAMP DEFAULT NOW(),
     PRIMARY KEY (user_email, chat_id),
     FOREIGN KEY (chat_id) REFERENCES chats(id)
@@ -53,32 +53,33 @@ CREATE TABLE chat_users (
 
 CREATE TABLE posts (
     id SERIAL PRIMARY KEY,
-    user_email TEXT NOT NULL,
-    parent_post_id INT,
-    chat_id INT NOT NULL,
-    content TEXT,
+    user_email VARCHAR(255) NOT NULL,
+    parent_post_id BIGINT UNSIGNED,
+    chat_id BIGINT UNSIGNED,
+    content VARCHAR(255),
     created_date TIMESTAMP DEFAULT NOW(),
     visible BOOLEAN DEFAULT TRUE,
     edited_at TIMESTAMP,
-    FOREIGN KEY (chat_id) REFERENCES chats(id)
+    FOREIGN KEY (chat_id) REFERENCES chats(id),
+    FOREIGN KEY (parent_post_id) REFERENCES posts(id) ON DELETE SET NULL
 );
 
 CREATE TABLE reaction_types (
     id SERIAL PRIMARY KEY,
-    name TEXT UNIQUE NOT NULL
+    name VARCHAR(255) UNIQUE NOT NULL
 );
 
 CREATE TABLE team_icons (
-    team_id INT,
-    url TEXT UNIQUE NOT NULL,
+    team_id BIGINT UNSIGNED,
+    url VARCHAR(255) UNIQUE NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
     FOREIGN KEY (team_id) REFERENCES teams(id)
 );
 
 CREATE TABLE post_reactions (
-    post_id INT,
-    user_email TEXT,
-    reaction_id INT NOT NULL,
+    post_id SERIAL,
+    user_email VARCHAR(255),
+    reaction_id BIGINT UNSIGNED NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
     PRIMARY KEY (post_id, user_email),
     FOREIGN KEY (post_id) REFERENCES posts(id),
@@ -87,8 +88,8 @@ CREATE TABLE post_reactions (
 
 CREATE TABLE attachments (
     id SERIAL PRIMARY KEY,
-    post_id INT,
-    url TEXT UNIQUE NOT NULL,
+    post_id BIGINT UNSIGNED,
+    url VARCHAR(255) UNIQUE NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
     FOREIGN KEY (post_id) REFERENCES posts(id)
 );
