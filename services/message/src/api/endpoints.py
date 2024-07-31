@@ -7,7 +7,7 @@ from src.core.organization import register_org
 router = APIRouter()
 
 
-@router.get("/organizations", response_model=List[dict])
+@router.get("/orgs", response_model=List[dict])
 def get_all_orgs():
     try:
         return []
@@ -16,10 +16,15 @@ def get_all_orgs():
             status_code=500, detail=f"""Error getting all orgs: {str(e)}""")
 
 
-@router.post("/organizations", response_model=int)
-def create_org(org_name, creator_email):
+class OrgCreateRequest(BaseModel):
+    org_name: str
+    creator_email: str
+
+
+@router.post("/orgs", response_model=int)
+def create_org(request: OrgCreateRequest):
     try:
-        return register_org(org_name, creator_email)
+        return register_org(request.org_name, request.creator_email)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"""Error registering org: {str(e)}""")
