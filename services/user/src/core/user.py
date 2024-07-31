@@ -105,15 +105,21 @@ def get_user_permission_level(user_email: str, org_id: Optional[int] = None):
 def request_org(org_name: str, creator_email: str) -> str:
     conn = connect_to_invites_database()
     cursor = conn.cursor()
-    request_status = None
     try:
         cursor.execute(
             """
             INSERT INTO organization_requests (org_name, created_by_email)
             VALUES (%s, %s)
-            RETURNING status;
             """, (org_name, creator_email))
-        request_status = cursor.fetchone()[0]
+
+        if cursor.rowcount == 1:
+            conn.commit()
+            print(f"Organization request for {
+                  org_name} created by user {creator_email}")
+            request_status = "SUCCESS"
+        else:
+            conn.rollback()
+            request_status = "FAILED"
         conn.commit()
         print(f"""organization request for {
               org_name} created by user {creator_email}""")
@@ -134,8 +140,6 @@ def update_org_request(org_name: str, current_user_email: str, status: str) -> s
             raise Exception(
                 f"""user {current_user_email} is not authorized to update organization requests.""")
 
-        # check if org request exists
-        # TODO:
         cursor.execute(
             """
             SELECT created_by_email FROM organization_requests
