@@ -85,7 +85,7 @@ def update_organization_request(request: OrgApproveRequest):
             status_code=500, detail=f"""Error updating organization request: {str(e)}""")
 
 
-@router.get("/invites/{user_email}", response_model=List[dict])
+@router.get("/invites/{user_email}", response_model=List[tuple])
 def list_user_invites(user_email: str):
     try:
         invites = list_invites(user_email)
