@@ -23,15 +23,11 @@ def get_all_users():
             status_code=500, detail=f"""Error getting all users: {str(e)}""")
 
 
-class UserRequest(BaseModel):
-    user_email: str
-
-
 @router.get("/users/{user_email}", response_model=dict)
 # TODO: use session token , session_token: str = Depends(get_session_token)
-def get_user(request: UserRequest):
+def get_user(user_email: str):
     try:
-        user = get_user_from_userpool(request.user_email)
+        user = get_user_from_userpool(user_email)
         return user
     except Exception as e:
         raise HTTPException(
