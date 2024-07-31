@@ -9,12 +9,14 @@ class DMHandler:
     secrets = get_secrets()
     self.client = boto3.client("apigatewaymanagementapi", endpoint_url=secrets["ws_ep"])
 
-    # Connect to DynamoDB table to log connections
-    dynamodb = boto3.resource("dynamodb")
-    self.table = dynamodb.Table("huskerly-ws-connections")
+    # DynamoDB table to track connections
+    self.table = boto3.resource("dynamodb").Table("huskerly-ws-connections")
 
-  #def add_connection():
-    #self.table.
+  def add_connection(self, id):
+    self.table.put_item(Item={ "connection_id": id})
+
+  def remove_connection(self, id):
+    self.table.delete_item(Item={ "connection_id": id})
 
   def send_dm(self, recipient, message):
     try:
@@ -29,3 +31,8 @@ class DMHandler:
 
     except Exception as e:
       print(f"Error sending message: {e}")
+
+  def broadcast(self, message):
+    recipients = self.table.scan()["Items"]
+    for recipient in recipients:
+      self.send_dm(recipient, message)

@@ -24,5 +24,5 @@ async def ws_unknown(req: Any = Body(None)):
 
 @router.post("/ws/send")
 async def ws_send(req: Any = Body(None)):
-    handler.send_dm("broadcast", req.message)
+    handler.broadcast(req.message)
     return {"status": 200}
