@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from api import endpoints
-from src.utils.connect import initialize_db_connection
+from utils.connect import initialize_db_connection
 
 app = FastAPI(root_path="/user", debug=True)
 
