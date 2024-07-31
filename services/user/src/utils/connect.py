@@ -37,8 +37,8 @@ def connect_to_invites_database():
 
     conn = invites_connection_pool.get_connection()
 
-    secret_name = "huskerly-db-credentials"
-    credentials = get_aws_secret(secret_name)
+    # secret_name = "huskerly-db-credentials"
+    # credentials = get_aws_secret(secret_name)
 
     # conn = mysql.connector.connect(
     #     database="huskerlyinvitesdb",
