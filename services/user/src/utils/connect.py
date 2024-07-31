@@ -6,13 +6,18 @@ from contextlib import contextmanager
 invites_connection_pool = None
 
 
+def initialize_db_connection():
+    global invites_connection_pool
+    invites_connection_pool = init_connection_pool("huskerlyinvitesdb")
+
+
 def init_connection_pool(dbname):
     secret_name = "huskerly-db-credentials"
     credentials = get_aws_secret(secret_name)
     try:
         return pooling.MySQLConnectionPool(
             pool_name="mypool",
-            pool_size=16,  # Maximum number of connections
+            pool_size=8,  # Maximum number of connections
             pool_reset_session=True,
             database=dbname,
             user=credentials['username'],

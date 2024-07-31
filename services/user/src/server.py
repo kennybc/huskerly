@@ -1,9 +1,12 @@
 from fastapi import FastAPI
 from api import endpoints
+from src.utils.connect import initialize_db_connection
 
 app = FastAPI(root_path="/user", debug=True)
 
 app.include_router(endpoints.router)
+
+initialize_db_connection()
 
 
 @app.get("/")
