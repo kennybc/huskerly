@@ -10,13 +10,13 @@ handler = DMHandler()
 
 @router.post("/ws/connect")
 async def ws_connect(req: Any = Body(None)):
-    print(req)
+    handler.add_connection(req["connectionId"])
     return {"status": 200}
 
 
 @router.post("/ws/disconnect")
 async def ws_disconnect(req: Any = Body(None)):
-    print(req)
+    handler.remove_connection(req["connectionId"])
     return {"status": 200}
 
 
