@@ -1,24 +1,49 @@
 
 
+from src.utils.aws import get_aws_secret, get_session
+from src.utils.connect import get_cursor
+
+pool_id = get_aws_secret("huskerly_userpool_id")["id"]
+
+
 def register_org(org_name, creator_email):
-    conn = connect_to_messages_database()
-    cursor = conn.cursor()
-    org_id = None
-    try:
+    with get_cursor() as cursor:
+        org_id = None
+
         cursor.execute(
             """
             INSERT INTO organizations (name, created_by_email, lead_admin_email)
             VALUES (%s, %s, %s)
-            RETURNING id;
             """, (org_name, creator_email, creator_email))
-        # need to add org_id to user table in cognito!!!!
-        org_id = cursor.fetchone()[0]
-        conn.commit()
-        print(f"organization with id {org_id} created by user {creator_email}")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        conn.rollback()
-    finally:
-        cursor.close()
-        conn.close()
-    return org_id
+
+        if cursor.rowcount == 1:
+            cursor.execute("SELECT LAST_INSERT_ID()")
+            org_id = cursor.fetchone()[0]
+
+        session = get_session()
+        client = session.client('cognito-idp', region_name='us-east-2')
+
+        response = client.admin_update_user_attributes(
+            UserPoolId=pool_id,
+            Username=creator_email,
+            UserAttributes=[
+                {
+                    'Name': 'custom:UserStatus',
+                    'Value': 'JOINED'
+                },
+                {
+                    'Name': 'custom:OrgId',
+                    'Value': str(org_id)
+                },
+                {
+                    'Name': 'custom:OrgRoll',  # TODO: NEEDS TO BE FIXED
+                    'Value': 'MEMBER'
+                }
+            ]
+        )
+
+        if response.get('ResponseMetadata', {}).get('HTTPStatusCode') != 200:
+            raise Exception(f"""Failed to update user {
+                            creator_email} with organization {org_id} in Cognito.""")
+
+        return org_id
