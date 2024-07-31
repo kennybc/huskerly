@@ -1,6 +1,5 @@
 from utils.connect import connect_to_invites_database
-from utils.role import assume_role
-from utils.secrets import get_aws_secret
+from utils.aws import assume_role, get_aws_secret
 from datetime import datetime, timedelta
 
 pool_id = get_aws_secret("huskerly_userpool_id")["id"]
@@ -90,8 +89,7 @@ def get_user_permission_level(user_email, org_id=None):
     )
 
     if response.get('ResponseMetadata', {}).get('HTTPStatusCode') != 200:
-        raise Exception(f"Failed to verify user {
-                        user_email} in Cognito.")
+        raise Exception(f"Failed to verify user {user_email} in Cognito.")
 
     user_attributes = get_user_attributes(response)
 
@@ -116,10 +114,10 @@ def request_org(org_name, creator_email):
             """, (org_name, creator_email))
         request_status = cursor.fetchone()[0]
         conn.commit()
-        print(f"organization request for {
-              org_name} created by user {creator_email}")
+        print(f"""organization request for {
+              org_name} created by user {creator_email}""")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"""An error occurred: {e}""")
         conn.rollback()
     finally:
         cursor.close()
@@ -133,7 +131,7 @@ def update_org_request(org_name, current_user_email, status):
     try:
         if get_user_permission_level(current_user_email) != "SYS_ADMIN":
             raise Exception(
-                f"user {current_user_email} is not authorized to update organization requests.")
+                f"""user {current_user_email} is not authorized to update organization requests.""")
 
         cursor.execute(
             """
@@ -145,16 +143,16 @@ def update_org_request(org_name, current_user_email, status):
 
         creator_email = cursor.fetchone()[0]
         if creator_email is None:
-            raise ValueError(f"Organization request for {
-                             org_name} does not exist.")
+            raise ValueError(f"""Organization request for {
+                             org_name} does not exist.""")
 
         # if status == "APPROVED":
         #     org_id = register_org(org_name, creator_email)
 
         conn.commit()
-        print(f"organization request for {org_name} updated to {status}")
+        print(f"""organization request for {org_name} updated to {status}""")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"""An error occurred: {e}""")
         conn.rollback()
     finally:
         cursor.close()
@@ -173,7 +171,7 @@ def list_invites(user_email):
             """, (user_email,))
         invites = cursor.fetchall()
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"""An error occurred: {e}""")
     finally:
         cursor.close()
         conn.close()
@@ -190,7 +188,7 @@ def join_org(org_id, user_email):
 
         if user_attributes.get('custom:UserStatus') == 'JOINED':
             raise Exception(
-                f"User {user_email} is already a member of an organization.")
+                f"""User {user_email} is already a member of an organization.""")
 
         # Check if an invitation exists
         cursor.execute(
@@ -202,19 +200,19 @@ def join_org(org_id, user_email):
         invite = cursor.fetchone()
 
         if invite is None:
-            raise Exception(f"No invitation found for user {
-                            user_email} to join organization {org_id}.")
+            raise Exception(f"""No invitation found for user {
+                            user_email} to join organization {org_id}.""")
 
         expiration_date, active = invite
 
         # Check if the invitation is active and has not expired
         if not active:
-            raise Exception(f"The invitation for user {
-                            user_email} to join organization {org_id} is not active.")
+            raise Exception(f"""The invitation for user {
+                            user_email} to join organization {org_id} is not active.""")
 
         if datetime.now() > expiration_date:
-            raise Exception(f"The invitation for user {
-                            user_email} to join organization {org_id} has expired.")
+            raise Exception(f"""The invitation for user {
+                            user_email} to join organization {org_id} has expired.""")
 
         # Update the invitation to inactive
         cursor.execute(
@@ -248,13 +246,13 @@ def join_org(org_id, user_email):
         )
 
         if response.get('ResponseMetadata', {}).get('HTTPStatusCode') != 200:
-            raise Exception(f"Failed to update user {
-                            user_email} with organization {org_id} in Cognito.")
+            raise Exception(f"""Failed to update user {
+                            user_email} with organization {org_id} in Cognito.""")
 
         conn.commit()
-        print(f"organization with id {org_id} joined by user {user_email}")
+        print(f"""organization with id {org_id} joined by user {user_email}""")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"""An error occurred: {e}""")
         conn.rollback()
     finally:
         cursor.close()
@@ -269,16 +267,17 @@ def invite_org(org_id, invitee_email, inviter_email, lifetime=86400):
         inviter = get_user_from_userpool(inviter_email)
         if inviter is None:
             raise Exception(
-                f"User {inviter_email} that created this invite does not exist.")
+                f"""User {inviter_email} that created this invite does not exist.""")
 
         # Check if inviter is sysadmin or is in org
         if get_user_permission_level(inviter_email, org_id) not in ["SYS_ADMIN", "ORG_ADMIN", "ASSIST_ADMIN"]:
             raise Exception(
-                f"user {inviter_email} is not authorized to invite to this organization.")
+                f"""user {inviter_email} is not authorized to invite to this organization.""")
 
         invitee = get_user_from_userpool(invitee_email)
         if invitee is None:
-            raise Exception(f"Invited user {invitee_email} does not exist.")
+            raise Exception(f"""Invited user {
+                            invitee_email} does not exist.""")
 
         # Calculate expiration date
         expiration_date = datetime.now() + timedelta(seconds=lifetime)
@@ -292,10 +291,10 @@ def invite_org(org_id, invitee_email, inviter_email, lifetime=86400):
             DO UPDATE SET expiration_date = EXCLUDED.expiration_date;
             """, (org_id, invitee_email, inviter_email, expiration_date))
         conn.commit()
-        print(f"{inviter_email} invited user {
-              invitee_email} to organization with id {org_id}")
+        print(f"""{inviter_email} invited user {
+              invitee_email} to organization with id {org_id}""")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"""An error occurred: {e}""")
         conn.rollback()
     finally:
         cursor.close()
