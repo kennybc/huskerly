@@ -68,8 +68,7 @@ def assume_role():
 
 def get_aws_secret(secret_name):
     # Create a Secrets Manager client
-    # session = assume_role()
-    session = boto3.Session()
+    session = assume_role()
     if session is None:
         raise Exception("Failed to assume role and create session")
 
