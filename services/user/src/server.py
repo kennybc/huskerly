@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from api import endpoints
 
-app = FastAPI()
+app = FastAPI(root_path="/user", debug=True)
 
 app.include_router(endpoints.router)
 
 
 @app.get("/")
 def get_root():
-    return {"name": "ms-user-test-1", "data": "3"}
+    return {"name": "ms-user-test-3", "data": "3"}
