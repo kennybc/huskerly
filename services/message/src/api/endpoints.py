@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Header, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-from src.core.organization import register_org
+from core.organization import register_org
 
 
 router = APIRouter()
