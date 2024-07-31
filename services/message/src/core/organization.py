@@ -1,7 +1,7 @@
 
 
-from src.utils.aws import get_aws_secret, get_session
-from src.utils.connect import get_cursor
+from utils.aws import get_aws_secret, get_session
+from utils.connect import get_cursor
 
 pool_id = get_aws_secret("huskerly_userpool_id")["id"]
 
