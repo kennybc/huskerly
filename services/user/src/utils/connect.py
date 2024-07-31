@@ -16,17 +16,17 @@ def init_connection_pool(dbname):
     try:
         connection_pool = pooling.MySQLConnectionPool(
             pool_name="mypool",
-            pool_size=20,  # Maximum number of connections
+            pool_size=32,  # Maximum number of connections
             pool_reset_session=True,
             database=dbname,
             user=credentials['username'],
             password=credentials['password'],
             host=credentials['host'],
             ssl_disabled=False,
+            connection_timeout=10
         )
     except mysql.connector.Error as err:
-        print(f"Error initializing connection pool: {err}, trying again")
-        init_connection_pool(dbname)
+        raise ValueError(f"Error initializing connection pool: {err}")
     finally:
         invites_connection_pool = connection_pool
     return invites_connection_pool
