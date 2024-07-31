@@ -38,7 +38,7 @@ class PermissionRequest(BaseModel):
     org_id: Optional[int] = None
 
 
-@router.get("/users/{user_email}/permission", response_model=str)
+@router.get("/users/permission/{user_email}", response_model=str)
 # TODO: should use session token
 def get_permission(user_email: str, request: PermissionRequest):
     try:
