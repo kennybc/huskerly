@@ -144,7 +144,7 @@ def update_org_request(org_name: str, current_user_email: str, status: str) -> s
             """
             SELECT created_by_email FROM organization_requests
             WHERE org_name = %s
-            """
+            """, (org_name,)
         )
         creator_email = cursor.fetchone()[0]
 
