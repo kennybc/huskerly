@@ -42,7 +42,7 @@ class MessageHandler:
         try :
             response = self.connections.put_item(
             Item={
-                    'userid': user_id,
+                    'connection_id': user_id,
                     'channel' : channel_id        
                 },
                 ConditionExpression=Attr('userid').ne(user_id)        
