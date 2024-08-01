@@ -168,13 +168,13 @@ def update_org_request(org_name: str, creator_email: str, current_user_email: st
             WHERE org_name = %s AND created_by_email = %s AND status = 'PENDING'
             """, (org_name, creator_email))
 
-            cursor.execute(
-                """
-            UPDATE organization_requests
-            SET status = 'REJECTED'
-            WHERE org_name = %s AND created_by_email != %s AND status = 'PENDING'
-            """, (org_name, creator_email)
-            )
+            # cursor.execute(
+            #     """
+            # UPDATE organization_requests
+            # SET status = 'REJECTED'
+            # WHERE org_name = %s AND created_by_email != %s AND status = 'PENDING'
+            # """, (org_name, creator_email)
+            # )
 
             org_id = create_org(org_name, created_by_email)
             join_org(org_id, created_by_email)
