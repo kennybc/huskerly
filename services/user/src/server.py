@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api import endpoints
+from services.user.src.api import user_routes, org_routes
 from utils.connect import initialize_db_connection
 
 app = FastAPI(root_path="/user", debug=True)
@@ -18,7 +18,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(endpoints.router)
+app.include_router(user_routes.router)
+app.include_router(org_routes.router)
 
 initialize_db_connection()
 

@@ -3,49 +3,10 @@ from pydantic import BaseModel
 from typing import List, Optional
 from core.user import get_all_users_from_userpool, get_user_from_userpool, get_user_permission_level, list_org_requests, request_org, update_org_request, list_invites, join_org, invite_org
 
-router = APIRouter()
+router = APIRouter(prefix="/org")
 
 
-def get_session_token(session_token: str = Header(...)):
-    if not session_token:
-        raise HTTPException(status_code=400, detail="Session token missing")
-    # TODO: add logic to validate the session token here
-    return session_token
-
-
-@router.get("/users", response_model=List[dict])
-def get_all_users():
-    try:
-        users = get_all_users_from_userpool()
-        return users
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error getting all users: {str(e)}""")
-
-
-@router.get("/users/{user_email}", response_model=dict)
-# TODO: use session token , session_token: str = Depends(get_session_token)
-def get_user(user_email: str):
-    try:
-        user = get_user_from_userpool(user_email)
-        return user
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error getting user information: {str(e)}""")
-
-
-@router.get("/users/permission/{user_email}/{org_id}", response_model=str)
-# TODO: should use session token
-def get_permission(user_email: str, org_id: Optional[int]):
-    try:
-        permission = get_user_permission_level(user_email, org_id)
-        return permission
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error authenticating user permissions: {str(e)}""")
-
-
-@router.get("/org/requests", response_model=List[tuple])
+@router.get("/requests", response_model=List[tuple])
 def get_org_requests():
     try:
         status = list_org_requests()
@@ -61,7 +22,7 @@ class OrgCreateRequest(BaseModel):
 
 
 # TODO: all str/int responses should be dict
-@router.post("/org/request", response_model=str)
+@router.post("/request", response_model=str)
 def request_organization(request: OrgCreateRequest):
     try:
         status = request_org(request.org_name, request.creator_email)
@@ -78,7 +39,7 @@ class OrgApproveRequest(BaseModel):
     status: str
 
 
-@router.put("/org/request", response_model=str)
+@router.put("/request", response_model=str)
 def update_organization_request(request: OrgApproveRequest):
     try:
         status = update_org_request(
@@ -90,22 +51,12 @@ def update_organization_request(request: OrgApproveRequest):
             status_code=500, detail=f"""Error updating organization request: {str(e)}""")
 
 
-@router.get("/invites/{user_email}", response_model=List[tuple])
-def list_user_invites(user_email: str):
-    try:
-        invites = list_invites(user_email)
-        return invites
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"""Error fetching invites for user {
-                            user_email}: {str(e)}""")
-
-
 class JoinRequest(BaseModel):
     org_id: int
     user_email: str
 
 
-@router.post("/org/join", response_model=int)
+@router.post("/join", response_model=int)
 def join_organization(request: JoinRequest):
     try:
         org_id = join_org(request.org_id, request.user_email)
@@ -122,7 +73,7 @@ class InviteRequest(BaseModel):
     lifetime: Optional[int] = 86400
 
 
-@router.post("/org/invite", response_model=int)
+@router.post("/invite", response_model=int)
 def invite_to_organization(invite_request: InviteRequest):
     try:
         org_id = invite_org(invite_request.org_id, invite_request.invitee_email,
