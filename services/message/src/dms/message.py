@@ -20,18 +20,26 @@ class MessageHandler:
             "s_2" : []
         }
 
+        # map of users to their active channel
+        self.user_to_channel = dict()
+
+
     # lets a user join a channel to chat in
     def join_channel(self, channel_id, user_id):
         self.active_channel_conns[channel_id].append(user_id)
+        self.user_to_channel[user_id] = channel_id
+
         print(self.active_channel_conns)
         
         print(user_id + " has joined " + channel_id)
         return user_id + " has joined " + channel_id
 
     # sends a message to everyone in a channel
-    def send_to_channel(self):
-        for recipient in self.activeConnections:
-            self.messageHandler.send_message(recipient, __MESSAGE__)
+    def send_to_channel(self, user_id, message):
+        channel = self.user_to_channel[user_id]
+
+        for recipient in self.active_channel_conns[channel]:
+            self.messageHandler.send_message(recipient, message)
 
 
     def send_message(self, recipient, message):
