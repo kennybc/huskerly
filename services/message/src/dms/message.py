@@ -29,6 +29,7 @@ class MessageHandler:
         self.active_channel_conns[channel_id].append(user_id)
         self.user_to_channel[user_id] = channel_id
 
+        
         print(self.active_channel_conns)
         print(self.user_to_channel)
         
@@ -42,6 +43,10 @@ class MessageHandler:
         self.active_channel_conns[user_channel].remove(user_id)
         #removes their channel from them
         self.user_to_channel[user_id] = ""
+
+        print("Diconnect user " + user_id)
+        print(self.user_to_channel)
+        print(self.active_channel_conns)
         
 
     # sends a message to everyone in a channel
@@ -60,7 +65,7 @@ class MessageHandler:
             response = self.client.post_to_connection(
                 ConnectionId=recipient, Data=json.dumps(message).encode("utf-8")
             )
-            print(f"Message sent to connection ID {recipient}, Response: {response}")
+            print(f"Message sent to connection ID {recipient}")
 
         except self.client.exceptions.GoneException:
             print(f"Connection ID {recipient} is no longer available.")
