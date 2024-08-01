@@ -23,6 +23,13 @@ class MessageHandler:
         # map of users to their active channel
         self.user_to_channel = dict()
 
+    #clears channels and such
+    def clear(self):
+        self.active_channel_conns = {
+            "s_1" : [],
+            "s_2" : []
+        }
+        self.user_to_channel = dict()
 
     # lets a user join a channel to chat in
     def join_channel(self, channel_id, user_id):
@@ -42,7 +49,7 @@ class MessageHandler:
         user_channel = self.user_to_channel[user_id]
         self.active_channel_conns[user_channel].remove(user_id)
         #removes their channel from them
-        self.user_to_channel[user_id] = ""
+        del self.user_to_channel[user_id]
 
         print("Diconnect user " + user_id)
         print(self.user_to_channel)
