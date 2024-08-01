@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Header, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-from core.user import get_all_users_from_userpool, get_user_from_userpool, get_user_permission_level, request_org, update_org_request, list_invites, join_org, invite_org
+from core.user import get_all_users_from_userpool, get_user_from_userpool, get_user_permission_level, list_org_requests, request_org, update_org_request, list_invites, join_org, invite_org
 
 router = APIRouter()
 
@@ -43,6 +43,16 @@ def get_permission(user_email: str, org_id: Optional[int]):
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"""Error authenticating user permissions: {str(e)}""")
+
+
+@router.get("/org/requests", response_model=List[tuple])
+def get_org_requests():
+    try:
+        status = list_org_requests()
+        return status
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"""Error sending organization request: {str(e)}""")
 
 
 class OrgCreateRequest(BaseModel):
