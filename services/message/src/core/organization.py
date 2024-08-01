@@ -3,7 +3,7 @@
 from utils.connect import get_cursor
 
 
-def register_org(org_name, creator_email):
+def register_org(org_name: str, creator_email: str) -> int:
     with get_cursor() as cursor:
         org_id = None
 
@@ -18,3 +18,20 @@ def register_org(org_name, creator_email):
             org_id = cursor.fetchone()[0]
 
         return org_id
+
+
+def modify_org(org_id: int, org_name: str, lead_admin_email: str) -> bool:
+    with get_cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE organizations
+            SET name = %s, lead_admin_email = %s
+            WHERE id = %s
+            """, (org_name, lead_admin_email, org_id))
+
+        return cursor.rowcount == 1
+
+
+def get_org_info(org_id: int) -> dict:
+    # TODO: get users from cognito?? :(
+    return {}
