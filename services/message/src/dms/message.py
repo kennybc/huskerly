@@ -39,7 +39,7 @@ class MessageHandler:
         channel = self.user_to_channel[user_id]
 
         for recipient in self.active_channel_conns[channel]:
-            self.messageHandler.send_message(recipient, message)
+            self.send_message(recipient, message)
 
 
     def send_message(self, recipient, message):
