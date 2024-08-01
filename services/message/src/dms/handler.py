@@ -43,4 +43,5 @@ class DMHandler:
     def broadcast(self, message):
         recipients = self.table.scan()["Items"]
         for recipient in recipients:
+            print("Sending to: " + recipient["connection_id"])
             self.send_dm(recipient["connection_id"], message)
