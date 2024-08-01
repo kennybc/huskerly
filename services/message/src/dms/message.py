@@ -28,12 +28,12 @@ class MessageHandler:
 
     #register an active connection
     def add_connection(self, id):
-        self.table.put_item(Item={"connection_id": id})
+        self.connections.put_item(Item={"connection_id": id})
         return
 
     # remove an active connection
     def remove_connection(self, id):
-        self.table.delete_item(Key={"connection_id": id})
+        self.connections.delete_item(Key={"connection_id": id})
         return
 
     # lets a user join a channel to chat in
