@@ -22,7 +22,7 @@ class MessageHandler:
 
     # lets a user join a channel to chat in
     def join_channel(self, channel_id, user_id):
-        self.activeConnections[channel_id].append(user_id)
+        self.active_channel_conns[channel_id].append(user_id)
         print(self.active_channel_conns)
         
         print(user_id + " has joined " + channel_id)
