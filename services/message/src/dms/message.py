@@ -32,12 +32,24 @@ class MessageHandler:
         print(self.active_channel_conns)
         
         print(user_id + " has joined " + channel_id)
-        return user_id + " has joined " + channel_id
+        self.send_to_channel(user_id, user_id + " has joined " + channel_id)
+
+    #removes a user from their channels when they disconnect
+    def leave_channels(self, user_id):
+        #removes user from active channel listeners
+        user_channel = self.user_to_channel[user_id]
+        self.active_channel_conns[user_channel].remove(user_id)
+        #removes their channel from them
+        self.user_to_channel[user_id] = ""
+        
 
     # sends a message to everyone in a channel
     def send_to_channel(self, user_id, message):
         channel = self.user_to_channel[user_id]
-
+        # if a user is disconnected / not in a channel atm
+        if channel == "":
+            return
+        
         for recipient in self.active_channel_conns[channel]:
             self.send_message(recipient, message)
 
