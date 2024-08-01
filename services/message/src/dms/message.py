@@ -30,6 +30,7 @@ class MessageHandler:
         self.user_to_channel[user_id] = channel_id
 
         print(self.active_channel_conns)
+        print(self.user_to_channel)
         
         print(user_id + " has joined " + channel_id)
         self.send_to_channel(user_id, user_id + " has joined " + channel_id)
