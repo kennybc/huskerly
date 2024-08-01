@@ -2,8 +2,11 @@ from utils.connect import get_cursor
 from utils.aws import get_session, get_aws_secret
 from datetime import datetime, timedelta
 from typing import List, Optional
+import requests
 
-pool_id = get_aws_secret("huskerly_userpool_id")["id"]
+secrets = get_aws_secret("huskerly-secrets-user")
+
+pool_id, create_org_endpoint = secrets["user_pool_id"], secrets["create_org_endpoint"]
 
 
 def get_all_users_from_userpool(user_pool_id=pool_id):
@@ -118,7 +121,26 @@ def request_org(org_name: str, creator_email: str) -> str:
         return request_status
 
 
-def update_org_request(org_name: str, current_user_email: str, status: str) -> str:
+def create_org(org_name: str, current_user_email: str) -> str:
+    payload = {
+        "org_name": org_name,
+        "creator_email": current_user_email
+    }
+
+    response = requests.post(create_org_endpoint, json=payload)
+
+    if response.status_code == 200:
+        response_data = response.json()
+        org_id = response_data.get("org_id")
+        if org_id:
+            return org_id
+        else:
+            raise ValueError("org_id not found in the response")
+    else:
+        response.raise_for_status()
+
+
+def update_org_request(org_name: str, creator_email: str, current_user_email: str, status: str) -> str:
     with get_cursor() as cursor:
         if get_user_permission_level(current_user_email) != "SYS_ADMIN":
             raise Exception(
@@ -127,24 +149,44 @@ def update_org_request(org_name: str, current_user_email: str, status: str) -> s
         cursor.execute(
             """
             SELECT created_by_email FROM organization_requests
-            WHERE org_name = %s
-            """, (org_name,)
+            WHERE org_name = %s AND status = 'PENDING' AND created_by_email = %s
+            """, (org_name, creator_email)
         )
-        creator_email = cursor.fetchone()[0]
+        created_by_email = cursor.fetchone()[0]
 
-        if creator_email is None:
+        if created_by_email is None:
             raise ValueError(f"""Organization request for {
                              org_name} does not exist.""")
 
-        cursor.execute(
-            """
+        if status == "APPROVED":
+            cursor.execute(
+                """
             UPDATE organization_requests
-            SET status = %s
-            WHERE org_name = %s
-            """, (status, org_name))
+            SET status = 'APPROVED'
+            WHERE org_name = %s AND created_by_email = %s AND status = 'PENDING'
+            """, (org_name, creator_email))
 
-        # if status == "APPROVED":
-        #     org_id = register_org(org_name, creator_email)
+            cursor.execute(
+                """
+            UPDATE organization_requests
+            SET status = 'REJECTED'
+            WHERE org_name = %s AND created_by_email != %s AND status = 'PENDING'
+            """, (org_name, creator_email)
+            )
+
+            org_id = create_org(org_name, created_by_email)
+            join_org(org_id, created_by_email)
+
+        elif status == "REJECTED":
+            cursor.execute(
+                """
+            UPDATE organization_requests
+            SET status = 'REJECTED'
+            WHERE org_name = %s AND created_by_email = %s AND status = 'PENDING'
+            """, (org_name, creator_email))
+        else:
+            raise ValueError(f"""Invalid status {status} provided.""")
+
         return status
 
 
