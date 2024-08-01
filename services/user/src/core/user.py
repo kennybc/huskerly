@@ -176,9 +176,12 @@ def update_org_request(org_name: str, creator_email: str, current_user_email: st
             # """, (org_name, creator_email)
             # )
 
-            org_id = create_org(org_name, created_by_email)
-            join_org(org_id, created_by_email)
-
+            if invite_org(org_id, creator_email, current_user_email) == 'SUCCESS':
+                org_id = create_org(org_name, creator_email)
+                if join_org(org_id, creator_email) == 'FAILED':
+                    return 'FAILED'
+            else:
+                return 'FAILED'
         elif status == "REJECTED":
             cursor.execute(
                 """
@@ -203,7 +206,7 @@ def list_invites(user_email: str) -> List[dict]:
         return invites
 
 
-def join_org(org_id: int, user_email: str) -> int:
+def join_org(org_id: int, user_email: str) -> str:
     with get_cursor() as cursor:
         # Check if the user is already a member of an organization
         invited_user = get_user_from_userpool(user_email)
@@ -272,10 +275,10 @@ def join_org(org_id: int, user_email: str) -> int:
             raise Exception(f"""Failed to update user {
                             user_email} with organization {org_id} in Cognito.""")
 
-        return org_id
+        return 'SUCCESS'
 
 
-def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: int = 86400):
+def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: int = 86400) -> str:
     with get_cursor() as cursor:
         inviter = get_user_from_userpool(inviter_email)
         if inviter is None:
@@ -303,7 +306,10 @@ def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: in
             ON DUPLICATE KEY UPDATE expiration_date = VALUES(expiration_date);
             """, (org_id, invitee_email, inviter_email, expiration_date))
 
-        return org_id
+        if cursor.rowcount == 0:
+            return 'FAILED'
+
+        return 'SUCCESS'
 
 
 def list_org_requests():
