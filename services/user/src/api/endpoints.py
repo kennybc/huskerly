@@ -62,6 +62,7 @@ def request_organization(request: OrgCreateRequest):
 
 class OrgApproveRequest(BaseModel):
     org_name: str
+    creator_email: str
     current_user_email: str  # TODO: should use session token
     status: str
 
@@ -70,7 +71,8 @@ class OrgApproveRequest(BaseModel):
 def update_organization_request(request: OrgApproveRequest):
     try:
         status = update_org_request(
-            request.org_name, request.current_user_email, request.status)
+            request.org_name, request.creator_email,
+            request.current_user_email, request.status)
         return status
     except Exception as e:
         raise HTTPException(
