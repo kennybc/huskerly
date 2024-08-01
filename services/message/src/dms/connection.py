@@ -5,7 +5,7 @@ import json
 
 class ConnectionHandler:
     
-    def __init__(self, id):
+    def __init__(self):
         # DynamoDB table to track connections
         self.table = boto3.resource(
             "dynamodb",
