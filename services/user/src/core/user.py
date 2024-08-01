@@ -180,7 +180,7 @@ def update_org_request(org_name: str, creator_email: str, current_user_email: st
             if invite_org(org_id, creator_email, current_user_email) != 'SUCCESS':
                 return 'FAILED'
 
-            if join_org(org_id, creator_email) == 'FAILED':
+            if join_org(org_id, creator_email, 'ORG_ADMIN') == 'FAILED':
                 return 'FAILED'
         elif status == "REJECTED":
             cursor.execute(
@@ -206,7 +206,7 @@ def list_invites(user_email: str) -> List[dict]:
         return invites
 
 
-def join_org(org_id: int, user_email: str) -> str:
+def join_org(org_id: int, user_email: str, role: str = 'MEMBER') -> str:
     with get_cursor() as cursor:
         # Check if the user is already a member of an organization
         invited_user = get_user_from_userpool(user_email)
@@ -266,7 +266,7 @@ def join_org(org_id: int, user_email: str) -> str:
                 },
                 {
                     'Name': 'custom:OrgRoll',  # TODO: NEEDS TO BE FIXED
-                    'Value': 'MEMBER'
+                    'Value': role
                 }
             ]
         )
