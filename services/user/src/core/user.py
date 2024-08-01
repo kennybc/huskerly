@@ -107,6 +107,7 @@ def get_user_permission_level(user_email: str, org_id: Optional[int] = None):
 
 def request_org(org_name: str, creator_email: str) -> str:
     with get_cursor() as cursor:
+        # TODO: add check to see if creator_email already in org
         cursor.execute(
             """
             INSERT INTO organization_requests (org_name, created_by_email)

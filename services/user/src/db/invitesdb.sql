@@ -19,5 +19,6 @@ CREATE TABLE organization_requests (
     created_by_email VARCHAR(255) NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
     status ENUM ('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING' NOT NULL,
+    -- TODO: add column for admin_email to track who approved/rejected
     PRIMARY KEY (org_name, created_by_email)
 );
