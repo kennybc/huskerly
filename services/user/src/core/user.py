@@ -311,6 +311,7 @@ def list_org_requests():
         cursor.execute(
             """
             SELECT * FROM organization_requests;
+            WHERE status = 'PENDING';
             """
         )
         requests = cursor.fetchall()
