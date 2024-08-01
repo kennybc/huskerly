@@ -10,6 +10,7 @@ handler = DMHandler()
 
 @router.post("/ws/connect")
 async def ws_connect(req: Any = Body(None)):
+    print("New connection -> " + req["connectionId"])
     handler.add_connection(req["connectionId"])
     return {"status": 200}
 

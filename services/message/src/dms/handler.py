@@ -24,7 +24,7 @@ class DMHandler:
         self.table.put_item(Item={"connection_id": id})
 
     def remove_connection(self, id):
-        # self.table.delete_item(Key={"connection_id": id})
+        self.table.delete_item(Key={"connection_id": id})
         return
 
     def send_dm(self, recipient, message):
