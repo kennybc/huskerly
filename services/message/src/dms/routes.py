@@ -37,5 +37,5 @@ async def ws_send(req: Any = Body(None)):
 
 @router.post("/ws/joinChannel")
 async def ws_joinChan(req: Any = Body(None)):
-    status = connect_h.join_channel(req["payload"]["channel_id"], req["connectionId"])
+    status = message_h.join_channel(req["payload"]["channel_id"], req["connectionId"])
     return status
