@@ -1,6 +1,10 @@
+from fastapi import APIRouter
 from utils.connect import get_cursor
 
+router = APIRouter(prefix="/post")
 
+
+@router.post("/send")
 def send_post(user_email, chat_id, content):
     with get_cursor() as cursor:
         cursor.execute(
@@ -9,6 +13,7 @@ def send_post(user_email, chat_id, content):
         )
 
 
+@router.post("/edit")
 def edit_post(user_email, post_id, content):
     with get_cursor() as cursor:
         cursor.execute(
@@ -17,6 +22,7 @@ def edit_post(user_email, post_id, content):
         )
 
 
+@router.post("/delete")
 def delete_post(user_email, post_id):
     with get_cursor() as cursor:
         cursor.execute(
