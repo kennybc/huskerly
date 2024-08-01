@@ -316,7 +316,7 @@ def list_org_requests():
     with get_cursor() as cursor:
         cursor.execute(
             """
-            SELECT * FROM organization_requests;
+            SELECT * FROM organization_requests
             WHERE status = 'PENDING';
             """
         )
