@@ -176,11 +176,11 @@ def update_org_request(org_name: str, creator_email: str, current_user_email: st
             # """, (org_name, creator_email)
             # )
 
-            if invite_org(org_id, creator_email, current_user_email) == 'SUCCESS':
-                org_id = create_org(org_name, creator_email)
-                if join_org(org_id, creator_email) == 'FAILED':
-                    return 'FAILED'
-            else:
+            org_id = create_org(org_name, creator_email)
+            if invite_org(org_id, creator_email, current_user_email) != 'SUCCESS':
+                return 'FAILED'
+
+            if join_org(org_id, creator_email) == 'FAILED':
                 return 'FAILED'
         elif status == "REJECTED":
             cursor.execute(
