@@ -7,15 +7,6 @@ from core.organization import register_org
 router = APIRouter()
 
 
-@router.get("/orgs", response_model=List[dict])
-def get_all_orgs():
-    try:
-        return []
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error getting all orgs: {str(e)}""")
-
-
 class OrgCreateRequest(BaseModel):
     org_name: str
     creator_email: str
