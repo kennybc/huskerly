@@ -64,7 +64,7 @@ class MessageHandler:
 
 
         # attepts to add user to channel connection list
-        response = self.connections.update_item(
+        response = self.active_channel_conns.update_item(
             Key={
                 'channel_id': channel_id
             },
