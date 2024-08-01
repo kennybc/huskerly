@@ -14,18 +14,25 @@ class MessageHandler:
             region_name="us-east-2",
         )
 
-        # DynamoDB table to track connections
-        self.table = boto3.resource(
-            "dynamodb",
-            region_name="us-east-2",
-        ).Table("huskerly-ws-connections")
+        #list of channel connections
+        self.active_channel_conns = {
+            "s_1" : [],
+            "s_2" : []
+        }
 
-    def add_connection(self, id):
-        self.table.put_item(Item={"connection_id": id})
+    # lets a user join a channel to chat in
+    def join_channel(self, channel_id, user_id):
+        self.activeConnections[channel_id].append(user_id)
+        print(self.active_channel_conns)
+        
+        print(user_id + " has joined " + channel_id)
+        return user_id + " has joined " + channel_id
 
-    def remove_connection(self, id):
-        self.table.delete_item(Key={"connection_id": id})
-        return
+    # sends a message to everyone in a channel
+    def send_to_channel(self):
+        for recipient in self.activeConnections:
+            self.messageHandler.send_message(recipient, __MESSAGE__)
+
 
     def send_message(self, recipient, message):
         try:
@@ -40,6 +47,8 @@ class MessageHandler:
         except Exception as e:
             print(f"Error sending message: {e}")
 
+
+    # depricated but don't want to delete
     def broadcast(self, message):
         recipients = self.table.scan()["Items"]
         for recipient in recipients:
