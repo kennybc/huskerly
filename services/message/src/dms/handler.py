@@ -4,7 +4,7 @@ import json
 from db.secrets import get_secrets
 
 
-class DMHandler:
+class MessageHandler:
     def __init__(self):
         # Connect to backend websocket endpoint
         secrets = get_secrets()
@@ -27,7 +27,7 @@ class DMHandler:
         self.table.delete_item(Key={"connection_id": id})
         return
 
-    def send_dm(self, recipient, message):
+    def send_message(self, recipient, message):
         try:
             response = self.client.post_to_connection(
                 ConnectionId=recipient, Data=json.dumps(message).encode("utf-8")
@@ -44,4 +44,4 @@ class DMHandler:
         recipients = self.table.scan()["Items"]
         for recipient in recipients:
             print("Sending to: " + recipient["connection_id"])
-            self.send_dm(recipient["connection_id"], message)
+            self.send_message(recipient["connection_id"], message)

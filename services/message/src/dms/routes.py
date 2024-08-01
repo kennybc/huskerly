@@ -1,11 +1,11 @@
 from typing import Any
 from fastapi import Body, APIRouter
 
-from dms.handler import DMHandler
+from dms.handler import MessageHandler
 
 router = APIRouter()
 
-handler = DMHandler()
+handler = MessageHandler()
 
 
 @router.post("/ws/connect")
@@ -31,3 +31,8 @@ async def ws_unknown(req: Any = Body(None)):
 async def ws_send(req: Any = Body(None)):
     handler.broadcast(req["payload"]["message"])
     return {"status": 200}
+
+@router.post("/ws/joinChannel")
+async def ws_joinChan(req: Any = Body(None)):
+    print(req) 
+    return {"status" : 200}
