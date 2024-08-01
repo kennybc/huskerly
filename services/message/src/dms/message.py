@@ -2,7 +2,7 @@ import boto3
 import json
 
 from db.secrets import get_secrets
-
+from boto3.dynamodb.conditions import Attr
 
 class MessageHandler:
     def __init__(self):
@@ -14,32 +14,68 @@ class MessageHandler:
             region_name="us-east-2",
         )
 
-        #list of channel connections
-        self.active_channel_conns = {
-            "s_1" : [],
-            "s_2" : []
-        }
+        # channels containing their users
+        self.active_channel_conns = boto3.resource(
+            "dynamodb",
+            region_name="us-east-2",
+        ).Table("huskerly-ws-channels")
+        
+        # DynamoDB table to track connections + their channels
+        self.connections = boto3.resource(
+            "dynamodb",
+            region_name="us-east-2",
+        ).Table("huskerly-ws-connections")
 
-        # map of users to their active channel
-        self.user_to_channel = dict()
+    #register an active connection
+    def add_connection(self, id):
+        self.table.put_item(Item={"connection_id": id})
+        return
 
-    #clears channels and such
-    def clear(self):
-        self.active_channel_conns = {
-            "s_1" : [],
-            "s_2" : []
-        }
-        self.user_to_channel = dict()
+    # remove an active connection
+    def remove_connection(self, id):
+        self.table.delete_item(Key={"connection_id": id})
+        return
 
     # lets a user join a channel to chat in
     def join_channel(self, channel_id, user_id):
-        print("\n join_channel")
-        self.active_channel_conns[channel_id].append(user_id)
-        self.user_to_channel[user_id] = channel_id
+        #Attempts to add channel to user connection, if it already exists its updated
+        try :
+            response = self.connections.put_item(
+            Item={
+                    'userid': user_id,
+                    'channel' : channel_id        
+                },
+                ConditionExpression=Attr('userid').ne(user_id)        
+            )
 
-        print(self.active_channel_conns)
-        print(self.user_to_channel)
-        
+            print("Conditional PutItem succeeded:")
+        except Exception as ce :    
+            if ce.response['Error']['Code'] == 'ConditionalCheckFailedException':
+                print("Key already exists")
+                response = self.connections.update_item(
+                    Key={'userid': user_id},
+                    UpdateExpression="set channel = :channel_id",
+                    ExpressionAttributeValues={":channel_id" : channel_id }
+                )
+                print("Update existing item succeeded:")
+            else:
+                print("Unexpected error: %s" % ce)
+                
+
+
+        # attepts to add user to channel connection list
+        response = self.connections.update_item(
+            Key={
+                'channel_id': channel_id
+            },
+            UpdateExpression="SET active_connections = list_append(active_connections, :i)",
+            ExpressionAttributeValues={
+                ':i': [user_id]
+            },
+            ReturnValues="UPDATED_NEW"
+)
+
+        # if that worked
         print(user_id + " has joined " + channel_id)
         self.send_to_channel(user_id, user_id + " has joined " + channel_id)
 
@@ -58,7 +94,7 @@ class MessageHandler:
 
     # sends a message to everyone in a channel
     def send_to_channel(self, user_id, message):
-        print("\n send_to_channel")
+        print("send_to_channel")
         print(self.user_to_channel)
         channel = self.user_to_channel[user_id]
         # if a user is disconnected / not in a channel atm
