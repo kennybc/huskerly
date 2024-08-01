@@ -16,7 +16,10 @@ CREATE TABLE organizations (
 CREATE TABLE teams (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255),
-    created_date TIMESTAMP DEFAULT NOW()
+    org_id BIGINT UNSIGNED,
+    created_date TIMESTAMP DEFAULT NOW(),
+    created_by_email VARCHAR(255) NOT NULL,
+    FOREIGN KEY (org_id) REFERENCES organizations(id)
 );
 
 CREATE TABLE chats (
