@@ -304,3 +304,14 @@ def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: in
             """, (org_id, invitee_email, inviter_email, expiration_date))
 
         return org_id
+
+
+def list_org_requests():
+    with get_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT * FROM organization_requests;
+            """
+        )
+        requests = cursor.fetchall()
+        return requests
