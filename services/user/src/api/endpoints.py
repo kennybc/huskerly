@@ -50,6 +50,7 @@ class OrgCreateRequest(BaseModel):
     creator_email: str
 
 
+# TODO: all str/int responses should be dict
 @router.post("/org/request", response_model=str)
 def request_organization(request: OrgCreateRequest):
     try:
