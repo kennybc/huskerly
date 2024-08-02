@@ -24,9 +24,18 @@ def get_session_token(session_token: str = Header(...)):
 #             status_code=500, detail=f"""Error getting user information: {str(e)}""")
 
 @router.get("/permission/{user_email}", response_model=str)
+def get_permission(user_email):
+    try:
+        permission = get_user_permission_level(user_email)
+        return permission
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"""Error authenticating user permissions: {str(e)}""")
+
+
 @router.get("/permission/{user_email}/{org_id}", response_model=str)
 # TODO: should use session token
-def get_permission(user_email: str, org_id: Optional[int]):
+def get_permission(user_email: str, org_id: int):
     try:
         permission = get_user_permission_level(user_email, org_id)
         return permission
