@@ -1,5 +1,5 @@
 from core.chat.shared import check_in_chat, join_chat
-from core.organization import check_admin_perm
+from core.organization import check_assist_admin_perm
 from utils.connect import get_cursor
 
 
@@ -16,7 +16,7 @@ def check_stream_perm(current_user_email: str, stream_id: int) -> bool:
 
         org_id = cursor.fetchone()[0]
 
-        return not (check_in_chat(current_user_email, stream_id) or check_admin_perm(current_user_email, org_id))
+        return not (check_in_chat(current_user_email, stream_id) or check_assist_admin_perm(current_user_email, org_id))
 
 
 def get_stream(stream_id: int) -> dict:

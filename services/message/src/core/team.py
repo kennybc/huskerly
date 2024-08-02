@@ -1,5 +1,5 @@
 
-from core.organization import check_admin_perm, check_in_org
+from core.organization import check_assist_admin_perm, check_in_org
 from utils.connect import get_cursor
 
 
@@ -27,7 +27,7 @@ def check_team_perm(current_user_email: str, team_id: int) -> bool:
 
         org_id = cursor.fetchone()[0]
 
-        return not (check_in_team(current_user_email, team_id) or check_admin_perm(current_user_email, org_id))
+        return not (check_in_team(current_user_email, team_id) or check_assist_admin_perm(current_user_email, org_id))
 
 
 def get_team(team_id: int) -> dict:

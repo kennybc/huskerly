@@ -20,10 +20,24 @@ def create_org(request: OrgCreateRequest):
             status_code=500, detail=f"""Error registering org: {str(e)}""")
 
 
+class TransferOrgRequest(BaseModel):
+    lead_admin_email: str
+    current_user_email: str
+
+
+@router.put("/{org_id}/transfer", response_model=bool)
+def transfer_lead_admin(org_id: int, request: TransferOrgRequest):
+    try:
+        return organization.transfer_lead_admin(
+            org_id, request.lead_admin_email, request.current_user_email)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"""Error transferring org: {str(e)}""")
+
+
 class OrgEditRequest(BaseModel):
     org_name: str
     current_user_email: str
-    lead_admin_email: str
 
 
 @router.put("/{org_id}", response_model=bool)

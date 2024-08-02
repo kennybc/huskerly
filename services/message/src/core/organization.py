@@ -18,8 +18,12 @@ def get_perm_level(user_email: str, org_id: Optional[int] = None) -> str:
     return perm_level
 
 
-def check_admin_perm(current_user_email: str, org_id: Optional[int] = None) -> bool:
+def check_assist_admin_perm(current_user_email: str, org_id: Optional[int] = None) -> bool:
     return get_perm_level(current_user_email, org_id) in ['SYS_ADMIN', 'ORG_ADMIN', 'ASSIST_ADMIN']
+
+
+def check_full_admin_perm(current_user_email: str, org_id: Optional[int] = None) -> bool:
+    return get_perm_level(current_user_email, org_id) in ['SYS_ADMIN', 'ORG_ADMIN']
 
 
 def check_in_org(user_email: str, org_id: int) -> bool:
@@ -43,19 +47,36 @@ def create_org(org_name: str, creator_email: str) -> int:
         return org_id
 
 
-def edit_org(org_id: int, current_user_email: str, org_name: str, lead_admin_email: str) -> bool:
+def transfer_lead_admin(org_id: int, new_lead_admin_email: str, current_user_email: str) -> bool:
     with get_cursor() as cursor:
 
-        if not check_admin_perm(current_user_email, org_id):
+        if not check_full_admin_perm(current_user_email, org_id):
             raise Exception(
                 "User does not have permission to perform this action")
 
         cursor.execute(
             """
             UPDATE organizations
-            SET name = %s, lead_admin_email = %s
+            SET lead_admin_email = %s
             WHERE id = %s AND deleted = FALSE
-            """, (org_name, lead_admin_email, org_id))
+            """, (new_lead_admin_email, org_id))
+
+        return cursor.rowcount == 1
+
+
+def edit_org(org_id: int, current_user_email: str, org_name: str) -> bool:
+    with get_cursor() as cursor:
+
+        if not check_assist_admin_perm(current_user_email, org_id):
+            raise Exception(
+                "User does not have permission to perform this action")
+
+        cursor.execute(
+            """
+            UPDATE organizations
+            SET name = %s
+            WHERE id = %s AND deleted = FALSE
+            """, (org_name, org_id))
 
         return cursor.rowcount == 1
 
@@ -63,7 +84,7 @@ def edit_org(org_id: int, current_user_email: str, org_name: str, lead_admin_ema
 def delete_org(org_id: int, current_user_email: str) -> bool:
     with get_cursor() as cursor:
 
-        if not check_admin_perm(current_user_email, org_id):
+        if not check_assist_admin_perm(current_user_email, org_id):
             raise Exception(
                 "User does not have permission to perform this action")
 
