@@ -67,6 +67,8 @@ def transfer_lead_admin(org_id: int, new_lead_admin_email: str, current_user_ema
 def edit_org(org_id: int, current_user_email: str, org_name: str) -> bool:
     with get_cursor() as cursor:
 
+        raise Exception(check_assist_admin_perm(current_user_email, org_id))
+
         if not check_assist_admin_perm(current_user_email, org_id):
             raise Exception(
                 "User does not have permission to perform this action")
