@@ -119,8 +119,8 @@ class MessageHandler:
             }
         )
 
-        if 'item' in response:
-            item = response['item']
+        if 'Item' in response:
+            item = response['Item']
             users = item.get('active_connections', [])
 
         print("alleged channel: " + channel)
