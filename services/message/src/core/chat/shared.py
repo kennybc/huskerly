@@ -1,7 +1,19 @@
 from utils.connect import get_cursor
 
 
-def get_post_history(chat_id: int) -> dict:
+def check_in_chat(user_email: str, chat_id: int) -> bool:
+    with get_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT user_email
+            FROM chat_users
+            WHERE user_email = %s AND chat_id = %s
+            """, (user_email, chat_id))
+
+        return cursor.fetchone() is not None
+
+
+def get_posts(chat_id: int) -> dict:
     with get_cursor() as cursor:
         cursor.execute(
             """

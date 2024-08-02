@@ -1,7 +1,6 @@
-from fastapi import APIRouter, HTTPException, Depends, Header, HTTPException
+from fastapi import APIRouter, HTTPException, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
-from core.team import delete_team, get_team_info, modify_team, create_team, join_team as join_a_team
+from core import team
 
 router = APIRouter(prefix="/team")
 
@@ -9,7 +8,7 @@ router = APIRouter(prefix="/team")
 @router.get("/{team_id}", response_model=dict)
 def get_team(team_id: int):
     try:
-        return get_team_info(team_id)
+        return team.get_team(team_id)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"""Error getting team: {str(e)}""")
@@ -38,16 +37,20 @@ class TeamEditRequest(BaseModel):
 @router.put("/{team_id}", response_model=bool)
 def edit_team(team_id: int, request: TeamEditRequest):
     try:
-        return modify_team(team_id, request.current_user_email, request.team_name)
+        return team.edit_team(team_id, request.current_user_email, request.team_name)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"""Error modifying team: {str(e)}""")
 
 
+class TeamDeleteRequest(BaseModel):
+    current_user_email: str
+
+
 @router.delete("/{team_id}", response_model=bool)
-def del_team(team_id: int):
+def delete_team(team_id: int, request: TeamDeleteRequest):
     try:
-        return delete_team(team_id)
+        return team.delete_team(request.current_user_email, team_id)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"""Error deleting team: {str(e)}""")
@@ -61,7 +64,7 @@ class TeamJoinRequest(BaseModel):
 @router.post("/join", response_model=bool)
 def join_team(request: TeamJoinRequest):
     try:
-        return join_a_team(request.team_id, request.user_email)
+        return team.join_team(request.team_id, request.user_email)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"""Error joining team: {str(e)}""")

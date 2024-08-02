@@ -1,7 +1,6 @@
-from fastapi import APIRouter, HTTPException, Depends, Header, HTTPException
+from fastapi import APIRouter, HTTPException, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
-from core.organization import delete_org, get_org_info, modify_org, register_org
+from core import organization
 
 
 router = APIRouter(prefix="/org")
@@ -15,7 +14,7 @@ class OrgCreateRequest(BaseModel):
 @router.post("", response_model=int)
 def create_org(request: OrgCreateRequest):
     try:
-        return register_org(request.org_name, request.creator_email)
+        return organization.create_org(request.org_name, request.creator_email)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"""Error registering org: {str(e)}""")
@@ -30,7 +29,7 @@ class OrgEditRequest(BaseModel):
 @router.put("/{org_id}", response_model=bool)
 def edit_org(org_id: int, request: OrgEditRequest):
     try:
-        return modify_org(org_id, request.current_user_email, request.org_name, request.lead_admin_email)
+        return organization.edit_org(org_id, request.current_user_email, request.org_name, request.lead_admin_email)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"""Error modifying org: {str(e)}""")
@@ -41,9 +40,9 @@ class OrgDeleteRequest(BaseModel):
 
 
 @router.delete("/{org_id}", response_model=bool)
-def del_org(org_id: int, request: OrgDeleteRequest):
+def delete_org(org_id: int, request: OrgDeleteRequest):
     try:
-        return delete_org(org_id, request.current_user_email)
+        return organization.delete_org(org_id, request.current_user_email)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"""Error deleting org: {str(e)}""")
@@ -52,7 +51,7 @@ def del_org(org_id: int, request: OrgDeleteRequest):
 @router.get("/{org_id}", response_model=dict)
 def get_org(org_id: int):
     try:
-        return get_org_info(org_id)
+        return organization.get_org(org_id)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"""Error getting org: {str(e)}""")

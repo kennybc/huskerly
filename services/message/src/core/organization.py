@@ -1,5 +1,6 @@
 
 
+from typing import Optional
 from utils.connect import get_cursor
 from utils.aws import get_aws_secret
 import requests
@@ -8,12 +9,16 @@ secrets = get_aws_secret("huskerly-secrets-message")
 org_user_endpoint, user_perm_endpoint = secrets['org_user_ep'], secrets['user_perm_ep']
 
 
-def get_perm_level(user_email: str, org_id: int) -> str:
-    perm_level = requests.get(user_perm_endpoint + f"{user_email}/{org_id}")
+def get_perm_level(user_email: str, org_id: Optional[int] = None) -> str:
+    if org_id is None:
+        perm_level = requests.get(user_perm_endpoint + f"{user_email}")
+    else:
+        perm_level = requests.get(
+            user_perm_endpoint + f"{user_email}/{org_id}")
     return perm_level.json()
 
 
-def check_admin_perm(current_user_email: str, org_id: int) -> bool:
+def check_admin_perm(current_user_email: str, org_id: Optional[int] = None) -> bool:
     return get_perm_level(current_user_email, org_id) in ['SYS_ADMIN', 'ORG_ADMIN']
 
 
@@ -21,7 +26,7 @@ def check_in_org(user_email: str, org_id: int) -> bool:
     return get_perm_level(user_email, org_id) == 'NONE'
 
 
-def register_org(org_name: str, creator_email: str) -> int:
+def create_org(org_name: str, creator_email: str) -> int:
     with get_cursor() as cursor:
         org_id = None
 
@@ -38,7 +43,7 @@ def register_org(org_name: str, creator_email: str) -> int:
         return org_id
 
 
-def modify_org(org_id: int, current_user_email: str, org_name: str, lead_admin_email: str) -> bool:
+def edit_org(org_id: int, current_user_email: str, org_name: str, lead_admin_email: str) -> bool:
     with get_cursor() as cursor:
 
         if not check_admin_perm(current_user_email, org_id):
@@ -71,7 +76,7 @@ def delete_org(org_id: int, current_user_email: str) -> bool:
         return cursor.rowcount == 1
 
 
-def get_org_info(org_id: int) -> dict:
+def get_org(org_id: int) -> dict:
     with get_cursor() as cursor:
         cursor.execute(
             """

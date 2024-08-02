@@ -1,3 +1,4 @@
+from core.organization import check_in_org
 from utils.connect import get_cursor
 from core.chat.shared import join_chat
 
@@ -22,6 +23,9 @@ def create_dm(creator_email: str, other_user_email: str, org_id: int) -> int:
     with get_cursor() as cursor:
         dm_id = None
 
+        if not check_in_org(creator_email, org_id) or not check_in_org(other_user_email, org_id):
+            raise Exception("Invalid user or organization")
+
         dm_name = f"{creator_email} and {other_user_email}"
 
         cursor.execute(
@@ -37,15 +41,3 @@ def create_dm(creator_email: str, other_user_email: str, org_id: int) -> int:
             join_chat(dm_id, other_user_email)
 
         return dm_id
-
-
-def edit_dm(dm_id: int, dm_name: str) -> bool:
-    with get_cursor() as cursor:
-        cursor.execute(
-            """
-            UPDATE chats
-            SET name = %s
-            WHERE id = %s AND chat_type = 'DIRECT_MESSAGE' AND deleted = FALSE
-            """, (dm_name, dm_id))
-
-        return cursor.rowcount == 1
