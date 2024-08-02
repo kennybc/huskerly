@@ -33,6 +33,15 @@ class MessageHandler:
 
     # remove an active connection
     def remove_connection(self, id):
+        # get the user's channel to remove them from 
+        response = self.connections.get_item(
+            Key={
+                'connection_id': id
+            }
+        )
+        channel = response["Item"].get('channel', [])
+        
+        self.leave_channel(id, channel)
         self.connections.delete_item(Key={"connection_id": id})
         return
 
@@ -81,16 +90,29 @@ class MessageHandler:
         self.send_to_channel(user_id, user_id + " has joined " + channel_id)
 
     #removes a user from their channels when they disconnect
-    def leave_channel(self, user_id):
+    def leave_channel(self, user_id, channel_id):
         #removes user from active channel listeners
-        user_channel = self.user_to_channel[user_id]
-        self.active_channel_conns[user_channel].remove(user_id)
-        #removes their channel from them
-        del self.user_to_channel[user_id]
+        
+        response = self.active_channel_conns.get_item(Key={'channel_id': channel_id})
+        active_connections  = response["Item"].get("active_connections", [])
 
-        print("Diconnect user " + user_id)
-        print(self.user_to_channel)
-        print(self.active_channel_conns)
+        # removes user if they're there
+        if user_id in active_connections:
+            active_connections.remove(user_id)
+        else:
+            print(f"{user_id} not found in active_connections")
+
+        # updates db
+        response = self.active_channel_conns.update_item(
+            Key={
+                'channel_id': channel_id
+            },
+            UpdateExpression="SET active_connections = :new_list",
+            ExpressionAttributeValues={
+                ':new_list': active_connections
+            },
+            ReturnValues="UPDATED_NEW"
+        )
         
 
     # sends a message to everyone in a channel
@@ -103,13 +125,9 @@ class MessageHandler:
                 'connection_id': user_id
             }
         )
-
-        channel = ""
-        print(response)
-        if 'Item' in response:
-            item = response['Item']
-            channel = item.get('channel', [])
-            print("Got channel " + channel)
+        
+        channel = response['Item'].get('channel', [])
+        print("Got channel " + channel)
 
 
         # get the active users in the channel
@@ -118,13 +136,11 @@ class MessageHandler:
                 'channel_id': channel
             }
         )
-
-        if 'Item' in response:
-            item = response['Item']
-            users = item.get('active_connections', [])
+        users = response['Item'].get('active_connections', [])
 
         print("alleged channel: " + channel)
-        print("alledeg users: " + users)
+        print("alledeg users: ")
+        print(users)
 
 
         # NEED TO CONTINUE HERE
