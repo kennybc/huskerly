@@ -41,7 +41,7 @@ def get_all_users_from_userpool_with_org_id(org_id, user_pool_id=pool_id):
     # Filter users based on the custom:OrgId attribute
     filtered_users = [
         user for user in all_users
-        if any(attr['Name'] == 'custom:OrgId' and attr['Value'] == org_id for attr in user['Attributes'])
+        if any(attr['Name'] == 'custom:OrgId' and attr['Value'] == org_id for attr in user['UserAttributes'])
     ]
 
     return filtered_users
