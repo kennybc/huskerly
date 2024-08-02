@@ -17,7 +17,6 @@ async def ws_connect(req: Any = Body(None)):
 
 @router.post("/ws/disconnect")
 async def ws_disconnect(req: Any = Body(None)):
-    message_h.remove_connection(req["connectionId"])
     message_h.leave_channel(req["connectionId"])
     return {"status": 200}
 
