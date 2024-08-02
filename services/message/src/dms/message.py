@@ -39,6 +39,7 @@ class MessageHandler:
     # lets a user join a channel to chat in
     def join_channel(self, channel_id, user_id):
         #Attempts to add channel to user connection, if it already exists its updated
+        print("Attempted join_channel")
         try :
             response = self.connections.put_item(
             Item={
@@ -48,7 +49,7 @@ class MessageHandler:
                 ConditionExpression=Attr('userid').ne(user_id)        
             )
 
-            print("Conditional PutItem succeeded:")
+            print("Added user to connection db:")
         except Exception as ce :    
             if ce.response['Error']['Code'] == 'ConditionalCheckFailedException':
                 print("Key already exists")
@@ -70,10 +71,10 @@ class MessageHandler:
             },
             UpdateExpression="SET active_connections = list_append(active_connections, :i)",
             ExpressionAttributeValues={
-                ':i': user_id
+                ':i': [user_id]
             },
             ReturnValues="UPDATED_NEW"
-)
+        )
 
         # if that worked
         print(user_id + " has joined " + channel_id)
