@@ -98,7 +98,7 @@ class MessageHandler:
         print("send_to_channel")
 
         # get the channel the user is actively in
-        response = self.active_channel_conns.get_item(
+        response = self.connections.get_item(
             Key={
                 'connection_id': user_id
             }
