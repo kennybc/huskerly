@@ -9,8 +9,8 @@ router = APIRouter(prefix="/org")
 @router.get("/requests", response_model=List[tuple])
 def get_org_requests():
     try:
-        status = list_org_requests()
-        return status
+        requests = list_org_requests()
+        return requests
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"""Error sending organization request: {str(e)}""")
