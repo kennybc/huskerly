@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Header, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-from core.user import get_all_users_from_userpool, get_user_from_userpool, get_user_permission_level, list_org_requests, request_org, update_org_request, list_invites, join_org, invite_org
+from core.user import get_user_permission_level, list_invites
 
 router = APIRouter()
 
@@ -13,28 +13,18 @@ def get_session_token(session_token: str = Header(...)):
     return session_token
 
 
-@router.get("/users", response_model=List[dict])
-def get_all_users():
-    try:
-        users = get_all_users_from_userpool()
-        return users
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error getting all users: {str(e)}""")
+# @router.get("/users/{user_email}", response_model=dict)
+# # TODO: use session token , session_token: str = Depends(get_session_token)
+# def get_user(user_email: str):
+#     try:
+#         user = get_user_from_userpool(user_email)
+#         return user
+#     except Exception as e:
+#         raise HTTPException(
+#             status_code=500, detail=f"""Error getting user information: {str(e)}""")
 
-
-@router.get("/users/{user_email}", response_model=dict)
-# TODO: use session token , session_token: str = Depends(get_session_token)
-def get_user(user_email: str):
-    try:
-        user = get_user_from_userpool(user_email)
-        return user
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error getting user information: {str(e)}""")
-
-
-@router.get("/users/permission/{user_email}/{org_id}", response_model=str)
+@router.get("/permission/{user_email}", response_model=str)
+@router.get("/permission/{user_email}/{org_id}", response_model=str)
 # TODO: should use session token
 def get_permission(user_email: str, org_id: Optional[int]):
     try:

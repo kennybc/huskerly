@@ -9,7 +9,7 @@ secrets = get_aws_secret("huskerly-secrets-user")
 pool_id, create_org_endpoint = secrets["user_pool_id"], secrets["create_org_endpoint"]
 
 
-def get_all_users_from_userpool(user_pool_id=pool_id):
+def get_all_users_from_userpool_with_org_id(org_id, user_pool_id=pool_id):
     # Create a Cognito Identity Provider client
     session = get_session()
     client = session.client('cognito-idp', region_name='us-east-2')
@@ -38,7 +38,13 @@ def get_all_users_from_userpool(user_pool_id=pool_id):
         if not pagination_token:
             break
 
-    return all_users
+    # Filter users based on the custom:OrgId attribute
+    filtered_users = [
+        user for user in all_users
+        if any(attr['Name'] == 'custom:OrgId' and attr['Value'] == org_id for attr in user['Attributes'])
+    ]
+
+    return filtered_users
 
 
 def get_user_from_userpool(username, user_pool_id=pool_id):

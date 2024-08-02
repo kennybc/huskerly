@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Header, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-from core.user import get_all_users_from_userpool, get_user_from_userpool, get_user_permission_level, list_org_requests, request_org, update_org_request, list_invites, join_org, invite_org
+from core.user import get_all_users_from_userpool_with_org_id, list_org_requests, request_org, update_org_request, join_org, invite_org
 
 router = APIRouter(prefix="/org")
 
@@ -82,3 +82,13 @@ def invite_to_organization(invite_request: InviteRequest):
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"""Error inviting to organization: {str(e)}""")
+
+
+@router.get("/{org_id}", response_model=List[dict])
+def get_all_users(org_id: int):
+    try:
+        users = get_all_users_from_userpool_with_org_id(org_id)
+        return users
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"""Error getting all users from organization: {str(e)}""")
