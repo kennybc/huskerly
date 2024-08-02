@@ -3,6 +3,7 @@ import json
 
 from db.secrets import get_secrets
 from boto3.dynamodb.conditions import Attr
+import botocore.exceptions
 
 class MessageHandler:
     def __init__(self):
@@ -94,25 +95,29 @@ class MessageHandler:
         #removes user from active channel listeners
         
         response = self.active_channel_conns.get_item(Key={'channel_id': channel_id})
-        active_connections  = response["Item"].get("active_connections", [])
+        try:
+            active_connections = response["Item"].get("active_connections", [])
+        
+             # removes user if they're there
+            if user_id in active_connections:
+                active_connections.remove(user_id)
+            else:
+                print(f"{user_id} not found in active_connections")
 
-        # removes user if they're there
-        if user_id in active_connections:
-            active_connections.remove(user_id)
-        else:
-            print(f"{user_id} not found in active_connections")
-
-        # updates db
-        response = self.active_channel_conns.update_item(
-            Key={
-                'channel_id': channel_id
-            },
-            UpdateExpression="SET active_connections = :new_list",
-            ExpressionAttributeValues={
-                ':new_list': active_connections
-            },
-            ReturnValues="UPDATED_NEW"
-        )
+            # updates db
+            response = self.active_channel_conns.update_item(
+                Key={
+                    'channel_id': channel_id
+                },
+                UpdateExpression="SET active_connections = :new_list",
+                ExpressionAttributeValues={
+                    ':new_list': active_connections
+                },
+                ReturnValues="UPDATED_NEW"
+            )
+        except ValidationException:
+            #If we're here, the user doesn't have a team, so no need to do any removal
+       
         
 
     # sends a message to everyone in a channel
