@@ -93,7 +93,6 @@ class MessageHandler:
     #removes a user from their channels when they disconnect
     def leave_channel(self, user_id, channel_id):
         #removes user from active channel listeners
-        
         response = self.active_channel_conns.get_item(Key={'channel_id': channel_id})
         try:
             active_connections = response["Item"].get("active_connections", [])
@@ -117,6 +116,7 @@ class MessageHandler:
             )
         except ValidationException:
             #If we're here, the user doesn't have a team, so no need to do any removal
+            pass
        
         
 
