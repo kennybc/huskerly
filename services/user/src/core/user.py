@@ -6,7 +6,7 @@ import requests
 
 secrets = get_aws_secret("huskerly-secrets-user")
 
-pool_id, create_org_endpoint = secrets["user_pool_id"], secrets["create_org_endpoint"]
+pool_id, create_org_endpoint = secrets["user_pool_id"], secrets["create_org_ep"]
 
 
 def get_all_users_from_userpool_with_org_id(org_id, user_pool_id=pool_id):
