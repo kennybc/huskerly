@@ -144,7 +144,7 @@ class MessageHandler:
 
 
         # NEED TO CONTINUE HERE
-        for recipient in self.active_channel_conns[channel]:
+        for recipient in users:
             self.send_message(recipient, message)
 
 
