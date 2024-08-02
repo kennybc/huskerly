@@ -105,6 +105,7 @@ class MessageHandler:
         )
 
         channel = ""
+        print(response)
         if 'item' in response:
             item = response['item']
             channel = item.get('channel', [])
