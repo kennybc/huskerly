@@ -18,8 +18,7 @@ def get_perm_level(user_email: str, org_id: Optional[int] = None) -> str:
         perm_level = requests.get(
             user_perm_endpoint + f"{user_email}/{org_id}")
     print("perm_level json: ", perm_level.json())
-    print("perm_level: ", perm_level)
-    return perm_level
+    return perm_level.json()
 
 
 def check_assist_admin_perm(current_user_email: str, org_id: Optional[int] = None) -> bool:
