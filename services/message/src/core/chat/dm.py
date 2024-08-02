@@ -9,7 +9,7 @@ def get_dm_info(dm_id: int) -> dict:
             SELECT c.name AS dm_name, cu.user_email
             FROM chats c
             JOIN chat_users cu ON c.id = cu.chat_id
-            WHERE c.chat_type == 'DIRECT_MESSAGE' AND c.id = %s
+            WHERE c.chat_type == 'DIRECT_MESSAGE' AND c.id = %s AND c.deleted = FALSE
             """, (dm_id,))
 
         result = cursor.fetchall()
@@ -45,7 +45,7 @@ def edit_dm(dm_id: int, dm_name: str) -> bool:
             """
             UPDATE chats
             SET name = %s
-            WHERE id = %s AND chat_type = 'DIRECT_MESSAGE'
+            WHERE id = %s AND chat_type = 'DIRECT_MESSAGE' AND deleted = FALSE
             """, (dm_name, dm_id))
 
         return cursor.rowcount == 1

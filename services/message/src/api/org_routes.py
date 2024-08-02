@@ -4,7 +4,7 @@ from typing import List, Optional
 from core.organization import register_org
 
 
-router = APIRouter()
+router = APIRouter(prefix="/org")
 
 
 class OrgCreateRequest(BaseModel):

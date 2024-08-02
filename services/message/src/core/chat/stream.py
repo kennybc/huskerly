@@ -9,7 +9,7 @@ def get_stream_info(stream_id: int) -> dict:
             SELECT c.name AS stream_name, cu.user_email
             FROM chats c
             JOIN chat_users cu ON c.id = cu.chat_id
-            WHERE c.chat_type == 'STREAM' AND c.id = %s
+            WHERE c.chat_type == 'STREAM' AND c.id = %s AND c.deleted = FALSE
             """, (stream_id,))
 
         result = cursor.fetchall()
@@ -42,7 +42,7 @@ def edit_stream(stream_id: int, stream_name: str, public: bool) -> bool:
             """
             UPDATE chats
             SET name = %s, public = %s
-            WHERE id = %s AND chat_type = 'STREAM'
+            WHERE id = %s AND chat_type = 'STREAM' AND deleted = FALSE
             """, (stream_name, public, stream_id))
 
         return cursor.rowcount == 1

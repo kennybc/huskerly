@@ -26,9 +26,20 @@ def modify_org(org_id: int, org_name: str, lead_admin_email: str) -> bool:
             """
             UPDATE organizations
             SET name = %s, lead_admin_email = %s
-            WHERE id = %s
+            WHERE id = %s AND deleted = FALSE
             """, (org_name, lead_admin_email, org_id))
 
+        return cursor.rowcount == 1
+
+
+def delete_org(org_id: int) -> bool:
+    with get_cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE organizations
+            SET deleted = TRUE
+            WHERE id = %s
+            """, (org_id,))
         return cursor.rowcount == 1
 
 
