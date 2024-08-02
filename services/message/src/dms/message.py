@@ -108,6 +108,7 @@ class MessageHandler:
             item = response['item']
             channel = item.get('channel', [])
 
+        print("Got channel")
         # get the active users in the channel
         response = self.active_channel_conns.get_item(
             Key={
