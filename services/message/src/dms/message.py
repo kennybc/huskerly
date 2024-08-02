@@ -106,10 +106,10 @@ class MessageHandler:
 
         channel = ""
         print(response)
-        if 'item' in response:
-            item = response['item']
+        if 'Item' in response:
+            item = response['Item']
             channel = item.get('channel', [])
-            print("Got channel")
+            print("Got channel " + channel)
 
 
         # get the active users in the channel
