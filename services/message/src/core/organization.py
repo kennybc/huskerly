@@ -11,10 +11,14 @@ org_user_endpoint, user_perm_endpoint = secrets['org_user_ep'], secrets['user_pe
 
 def get_perm_level(user_email: str, org_id: Optional[int] = None) -> str:
     if org_id is None:
+        print("getting user perms without org_id: ", user_email)
         perm_level = requests.get(user_perm_endpoint + f"{user_email}")
     else:
+        print("getting user perms with org_id: ", user_email, org_id)
         perm_level = requests.get(
             user_perm_endpoint + f"{user_email}/{org_id}")
+    print("perm_level json: ", perm_level.json())
+    print("perm_level: ", perm_level)
     return perm_level
 
 
@@ -66,8 +70,6 @@ def transfer_lead_admin(org_id: int, new_lead_admin_email: str, current_user_ema
 
 def edit_org(org_id: int, current_user_email: str, org_name: str) -> bool:
     with get_cursor() as cursor:
-
-        raise Exception(check_assist_admin_perm(current_user_email, org_id))
 
         if not check_assist_admin_perm(current_user_email, org_id):
             raise Exception(
