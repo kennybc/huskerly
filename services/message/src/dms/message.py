@@ -70,7 +70,7 @@ class MessageHandler:
             },
             UpdateExpression="SET active_connections = list_append(active_connections, :i)",
             ExpressionAttributeValues={
-                ':i': [user_id]
+                ':i': user_id
             },
             ReturnValues="UPDATED_NEW"
 )
@@ -95,12 +95,34 @@ class MessageHandler:
     # sends a message to everyone in a channel
     def send_to_channel(self, user_id, message):
         print("send_to_channel")
-        print(self.user_to_channel)
-        channel = self.user_to_channel[user_id]
-        # if a user is disconnected / not in a channel atm
-        if channel == "":
-            return
-        
+
+        # get the channel the user is actively in
+        response = self.active_channel_conns.get_item(
+            Key={
+                'connection_id': user_id
+            }
+        )
+
+        if 'item' in response:
+            item = response['item']
+            channel = item.get('channel', [])
+
+        # get the active users in the channel
+        response = self.active_channel_conns.get_item(
+            Key={
+                'channel_id': channel
+            }
+        )
+
+        if 'item' in response:
+            item = response['item']
+            users = item.get('active_connections', [])
+
+        print("alleged channel: " + channel)
+        print("alledeg users: " + users)
+
+
+        # NEED TO CONTINUE HERE
         for recipient in self.active_channel_conns[channel]:
             self.send_message(recipient, message)
 
