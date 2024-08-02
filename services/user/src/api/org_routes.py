@@ -56,7 +56,7 @@ class JoinRequest(BaseModel):
     user_email: str
 
 
-@router.post("/join", response_model=int)
+@router.post("/join", response_model=str)
 def join_organization(request: JoinRequest):
     try:
         org_id = join_org(request.org_id, request.user_email)
@@ -73,7 +73,7 @@ class InviteRequest(BaseModel):
     lifetime: Optional[int] = 86400
 
 
-@router.post("/invite", response_model=int)
+@router.post("/invite", response_model=str)
 def invite_to_organization(invite_request: InviteRequest):
     try:
         org_id = invite_org(invite_request.org_id, invite_request.invitee_email,
