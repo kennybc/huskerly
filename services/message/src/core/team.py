@@ -1,4 +1,18 @@
+
+from core.organization import check_in_org
 from utils.connect import get_cursor
+
+
+def check_in_team(user_email: str, team_id: int) -> bool:
+    with get_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT user_email
+            FROM team_users
+            WHERE user_email = %s AND team_id = %s
+            """, (user_email, team_id))
+
+        return cursor.fetchone() is not None
 
 
 def get_team_info(team_id: int) -> dict:
@@ -30,16 +44,18 @@ def create_team(team_name: str, creator_email: str, org_id: int) -> int:
         if cursor.rowcount == 1:
             cursor.execute("SELECT LAST_INSERT_ID()")
             team_id = cursor.fetchone()[0]
-            join_team_user(team_id, creator_email)
+            join_team(team_id, creator_email)
 
         return team_id
 
 
-def join_team_user(team_id: int, user_email: str) -> bool:
+def join_team(team_id: int, user_email: str) -> bool:
     with get_cursor() as cursor:
+
+        # Check if the team exists and is not deleted
         cursor.execute(
             """
-            SELECT deleted
+            SELECT deleted, org_id
             FROM teams
             WHERE id = %s
             """, (team_id,))
@@ -47,6 +63,12 @@ def join_team_user(team_id: int, user_email: str) -> bool:
         result = cursor.fetchone()
         if result is None or result[0]:
             return False
+
+        org_id = result[1]
+
+        # Check if the user is in the organization
+        if not check_in_org(user_email, org_id):
+            raise Exception("User is not in this organization")
 
         cursor.execute(
             """
@@ -57,8 +79,32 @@ def join_team_user(team_id: int, user_email: str) -> bool:
         return cursor.rowcount == 1
 
 
-def edit_team(team_id: int, team_name: str) -> bool:
+def leave_team(team_id: int, user_email: str) -> bool:
     with get_cursor() as cursor:
+        cursor.execute(
+            """
+            DELETE FROM team_users
+            WHERE team_id = %s AND user_email = %s
+            """, (team_id, user_email))
+
+        return cursor.rowcount == 1
+
+
+def modify_team(team_id: int, current_user_email: str, team_name: str) -> bool:
+    with get_cursor() as cursor:
+
+        # Check if the current user is a member of the team
+        cursor.execute(
+            """
+            SELECT user_email
+            FROM team_users
+            WHERE team_id = %s AND user_email = %s
+            """, (team_id, current_user_email))
+
+        result = cursor.fetchone()
+        if result is None:
+            return False
+
         cursor.execute(
             """
             UPDATE teams
