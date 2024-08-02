@@ -8,7 +8,7 @@ def get_team_info(team_id: int) -> dict:
             SELECT t.name AS team_name, tu.user_email
             FROM teams t
             JOIN team_users tu ON t.id = tu.team_id
-            WHERE t.id = %s
+            WHERE t.id = %s AND t.deleted = FALSE
             """, (team_id,))
 
         result = cursor.fetchall()
@@ -39,6 +39,17 @@ def join_team_user(team_id: int, user_email: str) -> bool:
     with get_cursor() as cursor:
         cursor.execute(
             """
+            SELECT deleted
+            FROM teams
+            WHERE id = %s
+            """, (team_id,))
+
+        result = cursor.fetchone()
+        if result is None or result[0]:
+            return False
+
+        cursor.execute(
+            """
             INSERT INTO team_members (team_id, user_email)
             VALUES (%s, %s)
             """, (team_id, user_email))
@@ -52,7 +63,7 @@ def edit_team(team_id: int, team_name: str) -> bool:
             """
             UPDATE teams
             SET name = %s
-            WHERE id = %s
+            WHERE id = %s AND deleted = FALSE
             """, (team_name, team_id))
 
         return cursor.rowcount == 1
