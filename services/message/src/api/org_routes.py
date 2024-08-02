@@ -43,7 +43,7 @@ class OrgEditRequest(BaseModel):
 @router.put("/{org_id}", response_model=bool)
 def edit_org(org_id: int, request: OrgEditRequest):
     try:
-        return organization.edit_org(org_id, request.current_user_email, request.org_name, request.lead_admin_email)
+        return organization.edit_org(org_id, request.current_user_email, request.org_name)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"""Error modifying org: {str(e)}""")
