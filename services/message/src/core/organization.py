@@ -17,17 +17,21 @@ def get_perm_level(user_email: str, org_id: Optional[int] = None) -> str:
         print("getting user perms with org_id: ", user_email, org_id)
         perm_level = requests.get(
             user_perm_endpoint + f"{user_email}/{org_id}")
-    print("perm_level json: ", perm_level.json())
-    print(type(perm_level.json()))
-    return perm_level.json().strip()
+    print("perm_level (type):", type(perm_level.json()))
+    print("perm_level (value):", perm_level.json())
+    return perm_level.json()
 
 
 def check_assist_admin_perm(current_user_email: str, org_id: Optional[int] = None) -> bool:
-    return get_perm_level(current_user_email, org_id) in ['SYS_ADMIN', 'ORG_ADMIN', 'ASSIST_ADMIN']
+    perm_level = get_perm_level(current_user_email, org_id)
+    print("Checking assist admin perm for:", perm_level)
+    return perm_level in ['SYS_ADMIN', 'ORG_ADMIN', 'ASSIST_ADMIN']
 
 
 def check_full_admin_perm(current_user_email: str, org_id: Optional[int] = None) -> bool:
-    return get_perm_level(current_user_email, org_id) in ['SYS_ADMIN', 'ORG_ADMIN']
+    perm_level = get_perm_level(current_user_email, org_id)
+    print("Checking full admin perm for:", perm_level)
+    return perm_level in ['SYS_ADMIN', 'ORG_ADMIN']
 
 
 def check_in_org(user_email: str, org_id: int) -> bool:
