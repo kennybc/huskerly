@@ -247,25 +247,22 @@ def request_org(org_name: str, creator_email: str):
 
 
 def create_org(org_name: str, current_user_email: str) -> int:
-
     payload = {"org_name": org_name, "creator_email": current_user_email}
 
-    response = requests.post(create_org_endpoint, json=payload)
-    if not response:
-        raise ServerError("Error occured while creating organization")
+    try:
+        response = requests.post(create_org_endpoint, json=payload)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        raise ServerError(f"Error occurred while creating organization: {
+                          response.text}") from e
 
-    if response.status_code == 200:
-        response_data = response.json()
-        print("!!!response_data:", response_data)
-        org_id = response_data.get("org_id")
-        # org_id = response_data
-        if org_id:
-            return int(org_id)
-        else:
-            raise ServerError("org_id not found in the response")
+    response_data = response.json()
+    print("response_data:", response_data)
+    org_id = response_data.get("org_id")
+    if org_id:
+        return int(org_id)
     else:
-        raise ServerError(
-            f"Error occured while creating organization: {response.text}")
+        raise ServerError("org_id not found in the response")
 
 
 def update_org_request(org_name: str, creator_email: str, current_user_email: str, status: str):
