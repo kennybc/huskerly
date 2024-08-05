@@ -1,9 +1,10 @@
 from utils.error import ServerError, UserError
 from utils.connect import get_cursor
-from utils.secrets import get_session, get_secrets
+from utils.secrets import get_secrets
 from datetime import datetime, timedelta
 from typing import List, Optional
 import requests
+import boto3
 
 secrets = get_secrets()
 pool_id, create_org_endpoint = secrets["user_pool_id"], secrets["create_org_ep"]
@@ -11,8 +12,8 @@ pool_id, create_org_endpoint = secrets["user_pool_id"], secrets["create_org_ep"]
 
 def get_all_users_from_userpool_with_org_id(org_id, user_pool_id=pool_id):
     # Create a Cognito Identity Provider client
-    session = get_session()
-    client = session.client("cognito-idp", region_name="us-east-2")
+    
+    client = boto3.client("cognito-idp", region_name="us-east-2")
 
     all_users = []
     pagination_token = None
@@ -83,8 +84,8 @@ def get_org_admin(org_id: int, user_pool_id=pool_id):
 
 def get_user_from_userpool(username, user_pool_id=pool_id):
     # Create a Cognito Identity Provider client
-    session = get_session()
-    client = session.client("cognito-idp", region_name="us-east-2")
+    
+    client = boto3.client("cognito-idp", region_name="us-east-2")
 
     # Get the user
     response = client.admin_get_user(
@@ -114,8 +115,8 @@ def get_user_permission_level(user_email: str, org_id: Optional[int] = None):
     Exception: If the user cannot be verified in Cognito or if the user is not authorized to invite to the organization.
     """
 
-    session = get_session()
-    client = session.client("cognito-idp", region_name="us-east-2")
+    
+    client = boto3.client("cognito-idp", region_name="us-east-2")
 
     # TODO:
     # if (access_token):
@@ -148,8 +149,8 @@ def get_user_permission_level(user_email: str, org_id: Optional[int] = None):
 
 
 def promote_assist_admin_to_admin(org_id: int, user_email: str):
-    session = get_session()
-    client = session.client("cognito-idp", region_name="us-east-2")
+    
+    client = boto3.client("cognito-idp", region_name="us-east-2")
 
     current_role = get_user_permission_level(user_email, org_id)
     current_org_admin = get_org_admin(org_id)
@@ -173,8 +174,8 @@ def promote_assist_admin_to_admin(org_id: int, user_email: str):
 
 
 def promote_member_to_assist_admin(org_id: int, user_email: str):
-    session = get_session()
-    client = session.client("cognito-idp", region_name="us-east-2")
+    
+    client = boto3.client("cognito-idp", region_name="us-east-2")
 
     current_role = get_user_permission_level(user_email, org_id)
     if current_role == "MEMBER":
@@ -200,8 +201,8 @@ def promote_user(org_id: int, user_email: str, target_role: str):
 
 
 def demote_to_member(org_id: int, user_email: str):
-    session = get_session()
-    client = session.client("cognito-idp", region_name="us-east-2")
+    
+    client = boto3.client("cognito-idp", region_name="us-east-2")
 
     current_role = get_user_permission_level(user_email, org_id)
 
@@ -389,8 +390,8 @@ def join_org(org_id: int, user_email: str, role: str = 'MEMBER'):
                 f"""Failed to update organization invite for {user_email}.""")
 
         # Update the user attribute in Cognito with the organization ID
-        session = get_session()
-        client = session.client("cognito-idp", region_name="us-east-2")
+        
+        client = boto3.client("cognito-idp", region_name="us-east-2")
 
         response = client.admin_update_user_attributes(
             UserPoolId=pool_id,
