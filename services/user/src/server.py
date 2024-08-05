@@ -3,20 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from api import user_routes, org_routes
+from utils.error import ServerError, UserError
 from utils.connect import initialize_db_connection
-
-
-class UserError(Exception):
-    def __init__(self, message: str):
-        self.message = message
-        super().__init__(self.message)
-
-
-class ServerError(Exception):
-    def __init__(self, message: str):
-        self.message = message
-        super().__init__(self.message)
-
 
 app = FastAPI(root_path="/user", debug=True)
 

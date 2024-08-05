@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Header, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
 from core import user
 
 router = APIRouter()

@@ -1,4 +1,4 @@
-from server import ServerError, UserError
+from utils.error import ServerError, UserError
 from utils.connect import get_cursor
 from utils.secrets import get_session, get_secrets
 from datetime import datetime, timedelta
