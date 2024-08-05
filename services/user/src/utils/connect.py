@@ -62,3 +62,6 @@ def get_cursor():
     finally:
         cursor.close()
         conn.close()
+
+
+initialize_db_connection()
