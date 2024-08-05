@@ -50,12 +50,12 @@ def get_cursor():
     try:
         yield cursor
         conn.commit()
-    except (ClientError, NoCredentialsError, UserError) as e:
+    except (ClientError, NoCredentialsError, UserError, EndpointConnectionError) as e:
         conn.rollback()
-        raise UserError(f"AWS client error: {e.response['Error']['Message']}")
-    except (EndpointConnectionError, ServerError):
+        raise UserError(f"Client error: {str(e)}")
+    except (ServerError, ValueError, KeyError) as e:
         conn.rollback()
-        raise ServerError("Failed to connect to AWS endpoint.")
+        raise ServerError(f"Server error: {str(e)}")
     except Exception as e:
         conn.rollback()
         raise ServerError(f"An unexpected error occurred: {str(e)}")
