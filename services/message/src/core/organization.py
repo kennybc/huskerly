@@ -79,31 +79,29 @@ def edit_org(org_id: int, current_user_email: str, org_name: str) -> bool:
     with get_cursor() as cursor:
         print("Editing org with org_id:", org_id, "and org_name:", org_name)
 
-        # Check permissions
         if not check_assist_admin_perm(current_user_email, org_id):
             raise Exception(
                 "User does not have permission to perform this action")
 
         print("User has permission to edit org")
 
-        # Verify the current state of the organization
-        cursor.execute(
-            """
-            SELECT id, name, deleted
-            FROM organizations
-            WHERE id = %s
-            """, (org_id,))
+        # cursor.execute(
+        #     """
+        #     SELECT id, name, deleted
+        #     FROM organizations
+        #     WHERE id = %s
+        #     """, (org_id,))
 
-        org = cursor.fetchone()
-        if org is None:
-            print("Organization with org_id:", org_id, "does not exist.")
-            return False
+        # org = cursor.fetchone()
+        # if org is None:
+        #     print("Organization with org_id:", org_id, "does not exist.")
+        #     return False
 
-        print("Current organization data:", org)
+        # print("Current organization data:", org)
 
-        if org[2]:
-            print("Organization with org_id:", org_id, "is marked as deleted.")
-            return False
+        # if org[2]:
+        #     print("Organization with org_id:", org_id, "is marked as deleted.")
+        #     return False
 
         # Perform the update
         cursor.execute(
@@ -113,7 +111,7 @@ def edit_org(org_id: int, current_user_email: str, org_name: str) -> bool:
             WHERE id = %s AND deleted = FALSE
             """, (org_name, org_id))
 
-        print("Rowcount after update:", cursor.rowcount)
+        # print("Rowcount after update:", cursor.rowcount)
 
         return cursor.rowcount == 1
 
