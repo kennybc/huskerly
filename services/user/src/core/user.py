@@ -1,3 +1,5 @@
+from botocore.exceptions import NoCredentialsError, ClientError, EndpointConnectionError
+from services.user.src.server import ServerError, UserError
 from utils.connect import get_cursor
 from utils.aws import get_session, get_aws_secret
 from datetime import datetime, timedelta
@@ -102,6 +104,7 @@ def get_user_permission_level(user_email: str, org_id: Optional[int] = None):
     Raises:
     Exception: If the user cannot be verified in Cognito or if the user is not authorized to invite to the organization.
     """
+
     session = get_session()
     client = session.client('cognito-idp', region_name='us-east-2')
 
@@ -120,7 +123,7 @@ def get_user_permission_level(user_email: str, org_id: Optional[int] = None):
     )
 
     if response.get('ResponseMetadata', {}).get('HTTPStatusCode') != 200:
-        raise Exception(f"Failed to verify user {user_email} in Cognito.")
+        raise ServerError(f"Failed to verify user {user_email} in Cognito.")
 
     user_attributes = get_user_attributes(response)
 
@@ -132,7 +135,7 @@ def get_user_permission_level(user_email: str, org_id: Optional[int] = None):
         return "NONE"
 
 
-def promote_assist_admin_to_admin(org_id: int, user_email: str) -> bool:
+def promote_assist_admin_to_admin(org_id: int, user_email: str):
     session = get_session()
     client = session.client('cognito-idp', region_name='us-east-2')
 
@@ -161,13 +164,12 @@ def promote_assist_admin_to_admin(org_id: int, user_email: str) -> bool:
                     }
                 ]
             )
-        return True
     else:
-        raise Exception(f"""Error while promoting user {
-                        user_email} to organization admin.""")
+        raise ServerError(f"""Cannot promote user {
+            user_email} to ORG_ADMIN.""")
 
 
-def promote_member_to_assist_admin(org_id: int, user_email: str) -> bool:
+def promote_member_to_assist_admin(org_id: int, user_email: str):
     session = get_session()
     client = session.client('cognito-idp', region_name='us-east-2')
 
@@ -183,29 +185,30 @@ def promote_member_to_assist_admin(org_id: int, user_email: str) -> bool:
                 }
             ]
         )
-        return True
     else:
-        raise Exception(f"""Error while promoting user {
-                        user_email} to assist admin.""")
+        raise ServerError(
+            f"""Cannot promote user {user_email} to ASSIST_ADMIN.""")
 
 
-def promote_user(org_id: int, user_email: str, target_role: str) -> bool:
+def promote_user(org_id: int, user_email: str, target_role: str):
     if target_role == 'ORG_ADMIN':
         return promote_assist_admin_to_admin(org_id, user_email)
     elif target_role == 'ASSIST_ADMIN':
         return promote_member_to_assist_admin(org_id, user_email)
     else:
-        raise Exception(f"""Invalid role {target_role} provided.""")
+        raise ServerError(f"""Cannot promote user {
+            user_email} to {target_role}.""")
 
 
-def demote_to_member(org_id: int, user_email: str) -> bool:
+def demote_to_member(org_id: int, user_email: str):
     session = get_session()
     client = session.client('cognito-idp', region_name='us-east-2')
 
     current_role = get_user_permission_level(user_email, org_id)
 
     if current_role == 'SYS_ADMIN':
-        raise Exception(f"""Cannot demote user {user_email} to member.""")
+        raise ClientError(f"""Cannot demote user {
+            user_email} to member.""")
     elif current_role in ['ORG_ADMIN', 'ASSIST_ADMIN']:
         client.admin_update_user_attributes(
             UserPoolId=pool_id,
@@ -216,20 +219,19 @@ def demote_to_member(org_id: int, user_email: str) -> bool:
                     'Value': 'MEMBER'
                 }
             ])
-        return True
     else:
-        raise Exception(f"""Error while demoting user {
-                        user_email} to member.""")
+        raise ServerError(f"""Error while demoting user {
+            user_email} to member.""")
 
 
-def request_org(org_name: str, creator_email: str) -> bool:
+def request_org(org_name: str, creator_email: str):
     with get_cursor() as cursor:
         user = get_user_from_userpool(creator_email)
         if user is None:
-            raise Exception(f"""User {creator_email} does not exist.""")
+            raise ClientError(f"""User {creator_email} does not exist.""")
         user_attributes = get_user_attributes(user)
         if user_attributes.get('custom:UserStatus') == 'JOINED':
-            raise Exception(
+            raise ClientError(
                 f"""User {creator_email} is already a member of an organization.""")
 
         cursor.execute(
@@ -238,7 +240,9 @@ def request_org(org_name: str, creator_email: str) -> bool:
             VALUES (%s, %s)
             """, (org_name, creator_email))
 
-        return cursor.rowcount == 1
+        if not cursor.rowcount == 1:
+            raise ServerError(
+                f"""Failed to create organization request for {org_name}.""")
 
 
 def create_org(org_name: str, current_user_email: str) -> int:
@@ -261,10 +265,10 @@ def create_org(org_name: str, current_user_email: str) -> int:
         response.raise_for_status()
 
 
-def update_org_request(org_name: str, creator_email: str, current_user_email: str, status: str) -> bool:
+def update_org_request(org_name: str, creator_email: str, current_user_email: str, status: str):
     with get_cursor() as cursor:
         if get_user_permission_level(current_user_email) != "SYS_ADMIN":
-            raise Exception(
+            raise ClientError(
                 f"""User {current_user_email} is not authorized to update organization requests.""")
 
         cursor.execute(
@@ -296,11 +300,8 @@ def update_org_request(org_name: str, creator_email: str, current_user_email: st
             # )
 
             org_id = create_org(org_name, creator_email)
-            if not invite_org(org_id, creator_email, current_user_email):
-                return False
-
-            if not join_org(org_id, creator_email, 'ORG_ADMIN'):
-                return False
+            invite_org(org_id, creator_email, current_user_email)
+            join_org(org_id, creator_email, 'ORG_ADMIN')
         elif status == "REJECTED":
             cursor.execute(
                 """
@@ -310,8 +311,6 @@ def update_org_request(org_name: str, creator_email: str, current_user_email: st
             """, (org_name, creator_email))
         else:
             raise ValueError(f"""Invalid status {status} provided.""")
-
-        return True
 
 
 def list_invites(user_email: str) -> List[dict]:
@@ -325,14 +324,14 @@ def list_invites(user_email: str) -> List[dict]:
         return invites
 
 
-def join_org(org_id: int, user_email: str, role: str = 'MEMBER') -> bool:
+def join_org(org_id: int, user_email: str, role: str = 'MEMBER'):
     with get_cursor() as cursor:
         # Check if the user is already a member of an organization
         invited_user = get_user_from_userpool(user_email)
         user_attributes = get_user_attributes(invited_user)
 
         if user_attributes.get('custom:UserStatus') == 'JOINED':
-            raise Exception(
+            raise ClientError(
                 f"""User {user_email} is already a member of an organization.""")
 
         # Check if an invitation exists
@@ -345,19 +344,19 @@ def join_org(org_id: int, user_email: str, role: str = 'MEMBER') -> bool:
         invite = cursor.fetchone()
 
         if invite is None:
-            raise Exception(f"""No invitation found for user {
-                            user_email} to join organization {org_id}.""")
+            raise ClientError(f"""No invitation found for user {
+                user_email} to join organization {org_id}.""")
 
         expiration_date, active = invite
 
         # Check if the invitation is active and has not expired
         if not active:
-            raise Exception(f"""The invitation for user {
-                            user_email} to join organization {org_id} is not active.""")
+            raise ClientError(f"""The invitation for user {
+                user_email} to join organization {org_id} is not active.""")
 
         if datetime.now() > expiration_date:
-            raise Exception(f"""The invitation for user {
-                            user_email} to join organization {org_id} has expired.""")
+            raise ClientError(f"""The invitation for user {
+                user_email} to join organization {org_id} has expired.""")
 
         # Update the invitation to inactive
         cursor.execute(
@@ -366,6 +365,10 @@ def join_org(org_id: int, user_email: str, role: str = 'MEMBER') -> bool:
             SET active = FALSE
             WHERE org_id = %s AND user_email = %s;
             """, (org_id, user_email))
+
+        if not cursor.rowcount == 1:
+            raise ServerError(
+                f"""Failed to update organization invite for {user_email}.""")
 
         # Update the user attribute in Cognito with the organization ID
         session = get_session()
@@ -384,29 +387,27 @@ def join_org(org_id: int, user_email: str, role: str = 'MEMBER') -> bool:
                     'Value': str(org_id)
                 },
                 {
-                    'Name': 'custom:OrgRoll',  # TODO: NEEDS TO BE FIXED
+                    'Name': 'custom:OrgRoll',  # TODO: TYPO IN COGNITO NEEDS TO BE FIXED
                     'Value': role
                 }
             ]
         )
 
         if response.get('ResponseMetadata', {}).get('HTTPStatusCode') != 200:
-            raise Exception(f"""Failed to update user {
-                            user_email} with organization {org_id} in Cognito.""")
-
-        return True
+            raise ServerError(f"""Failed to update user {
+                user_email} with organization {org_id} in Cognito.""")
 
 
-def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: int = 86400) -> bool:
+def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: int = 86400):
     with get_cursor() as cursor:
         inviter = get_user_from_userpool(inviter_email)
         if inviter is None:
-            raise Exception(
+            raise ClientError(
                 f"""User {inviter_email} that created this invite does not exist.""")
 
         # Check if inviter is sysadmin or is in org
         if get_user_permission_level(inviter_email, org_id) not in ["SYS_ADMIN", "ORG_ADMIN", "ASSIST_ADMIN"]:
-            raise Exception(
+            raise ClientError(
                 f"""user {inviter_email} is not authorized to invite to this organization.""")
 
         # invitee = get_user_from_userpool(invitee_email)
@@ -425,7 +426,9 @@ def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: in
             ON DUPLICATE KEY UPDATE expiration_date = VALUES(expiration_date);
             """, (org_id, invitee_email, inviter_email, expiration_date))
 
-        return cursor.rowcount == 1
+        if not cursor.rowcount == 1:
+            raise ServerError(
+                f"""Failed to create organization invite for {invitee_email}.""")
 
 
 def list_org_requests():

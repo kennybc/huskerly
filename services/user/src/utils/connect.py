@@ -1,7 +1,9 @@
 import mysql.connector
 from mysql.connector import pooling
+from server import ServerError, UserError
 from utils.aws import get_aws_secret
 from contextlib import contextmanager
+from botocore.exceptions import NoCredentialsError, ClientError, EndpointConnectionError
 
 invites_connection_pool = None
 
@@ -49,9 +51,15 @@ def get_cursor():
     try:
         yield cursor
         conn.commit()
+    except (ClientError, NoCredentialsError, UserError) as e:
+        conn.rollback()
+        raise UserError(f"AWS client error: {e.response['Error']['Message']}")
+    except (EndpointConnectionError, ServerError):
+        conn.rollback()
+        raise ServerError("Failed to connect to AWS endpoint.")
     except Exception as e:
         conn.rollback()
-        raise Exception(f"An error occurred: {e}")
+        raise ServerError(f"An unexpected error occurred: {str(e)}")
     finally:
         cursor.close()
         conn.close()

@@ -1,8 +1,22 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from api import user_routes, org_routes
 from utils.connect import initialize_db_connection
+
+
+class UserError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+
+class ServerError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
 
 app = FastAPI(root_path="/user", debug=True)
 
@@ -22,9 +36,25 @@ app.add_middleware(
 app.include_router(user_routes.router)
 app.include_router(org_routes.router)
 
+
+@app.exception_handler(UserError)
+async def user_error_handler(request, exc: UserError):
+    return JSONResponse(
+        status_code=400,
+        content={"status": "FAILED", "detail": exc.message},
+    )
+
+
+@app.exception_handler(ServerError)
+async def server_error_handler(request, exc: ServerError):
+    return JSONResponse(
+        status_code=500,
+        content={"status": "FAILED", "detail": exc.message},
+    )
+
 initialize_db_connection()
 
 
-@app.get("/")
-def get_root():
-    return {"name": "ms-user-test-3", "data": "3"}
+# @app.get("/")
+# def get_root():
+#     return {"name": "ms-user-test-3", "data": "3"}
