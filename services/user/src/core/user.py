@@ -436,6 +436,16 @@ def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: in
 
         # Calculate expiration date
         expiration_date = datetime.now() + timedelta(seconds=lifetime)
+        
+        cursor.execute(
+            """
+            SELECT * FROM organization_invites
+            WHERE org_id = %s AND user_email = %s;
+            """, (org_id, invitee_email)
+        )
+        
+        if cursor.fetchone():
+            raise UserError(f"""User {invitee_email} has already been invited to organization {org_id}.""")
 
         # Insert invite into the database
         cursor.execute(
