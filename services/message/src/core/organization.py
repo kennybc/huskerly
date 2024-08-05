@@ -25,6 +25,10 @@ def get_perm_level(user_email: str, org_id: Optional[int] = None) -> str:
 def check_assist_admin_perm(current_user_email: str, org_id: Optional[int] = None) -> bool:
     perm_level = get_perm_level(current_user_email, org_id)
     print("Checking assist admin perm for:", perm_level)
+    print("Checking against:", 'ORG_ADMIN')
+    print("type:", type('ORG_ADMIN'))
+    print("Result:", perm_level in ['ORG_ADMIN'])
+
     return perm_level in ['SYS_ADMIN', 'ORG_ADMIN', 'ASSIST_ADMIN']
 
 
