@@ -44,14 +44,14 @@ def get_all_users_from_userpool_with_org_id(org_id, user_pool_id=pool_id):
         if any(attr['Name'] == 'custom:OrgId' and attr['Value'] == str(org_id) for attr in user['Attributes'])
     ]
 
-    org_admin = filter(
-        lambda user: user['Attributes']['custom:OrgId'] == 'ORG_ADMIN', filtered_users)[0]
-    assist_admins = filter(
-        lambda user: user['Attributes']['custom:OrgId'] == 'ASSIST_ADMIN', filtered_users)
-    members = filter(
-        lambda user: user['Attributes']['custom:OrgId'] == 'MEMBER', filtered_users)
-    other_users = filter(
-        lambda user: user['Attributes']['custom:OrgId'] not in ['ORG_ADMIN', 'ASSIST_ADMIN', 'MEMBER'], filtered_users)
+    org_admin = list(filter(
+        lambda user: user['Attributes']['custom:OrgId'] == 'ORG_ADMIN', filtered_users))[0]
+    assist_admins = list(filter(
+        lambda user: user['Attributes']['custom:OrgId'] == 'ASSIST_ADMIN', filtered_users))
+    members = list(filter(
+        lambda user: user['Attributes']['custom:OrgId'] == 'MEMBER', filtered_users))
+    other_users = list(filter(
+        lambda user: user['Attributes']['custom:OrgId'] not in ['ORG_ADMIN', 'ASSIST_ADMIN', 'MEMBER'], filtered_users))
 
     return {
         'org_admin': org_admin,
