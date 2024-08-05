@@ -253,8 +253,8 @@ def create_org(org_name: str, current_user_email: str) -> int:
         response = requests.post(create_org_endpoint, json=payload)
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
-        raise ServerError(f"Error occurred while creating organization: {
-                          response.text}") from e
+        raise ServerError(f"""Error occurred while creating organization: {
+                          response.text}""") from e
 
     response_data = response.json()
     print("response_data:", response_data)
