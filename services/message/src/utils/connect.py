@@ -1,10 +1,10 @@
 import mysql.connector
 from mysql.connector import pooling
-from services.message.src.utils.secrets import get_secrets
+from secrets import get_secrets
 from contextlib import contextmanager
 
 invites_connection_pool = None
-secrets = get_secrets
+secrets = get_secrets()
 
 
 def initialize_db_connection():
@@ -19,8 +19,8 @@ def init_connection_pool(dbname):
             pool_size=8,  # Maximum number of connections
             pool_reset_session=True,
             database=dbname,
-            user=secrets["user"],
-            password=secrets["password"],
+            user=secrets["db_user"],
+            password=secrets["db_pass"],
             host=secrets["db_ep"],
             ssl_disabled=False,
             connection_timeout=10,
