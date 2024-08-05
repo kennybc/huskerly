@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from api import user_routes, org_routes
+from utils.connect import initialize_db_connection
 from utils.error import ServerError, UserError
 
 app = FastAPI(root_path="/user", debug=True)
@@ -38,6 +39,9 @@ async def server_error_handler(request, exc: ServerError):
         status_code=500,
         content={"status": "FAILED", "detail": exc.message},
     )
+
+
+initialize_db_connection()
 
 
 # @app.get("/")

@@ -1,6 +1,6 @@
 import mysql.connector
 from mysql.connector import pooling
-from server import ServerError, UserError
+from utils.error import ServerError, UserError
 from secrets import get_secrets
 from contextlib import contextmanager
 from botocore.exceptions import NoCredentialsError, ClientError, EndpointConnectionError
@@ -62,6 +62,3 @@ def get_cursor():
     finally:
         cursor.close()
         conn.close()
-
-
-initialize_db_connection()

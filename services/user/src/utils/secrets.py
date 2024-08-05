@@ -1,7 +1,6 @@
 import boto3
 from datetime import datetime, timezone, timedelta
 import json
-from botocore.exceptions import ClientError
 
 global_session_info = {"session": None, "expiry": None}
 session_duration = 1200  # How many seconds a session is valid for
@@ -18,7 +17,8 @@ def get_session():
 
     session = boto3.Session()
 
-    expiry_time = datetime.now(timezone.utc) + timedelta(seconds=session_duration)
+    expiry_time = datetime.now(timezone.utc) + \
+        timedelta(seconds=session_duration)
 
     global_session_info["session"] = session
     global_session_info["expiry"] = expiry_time
@@ -31,7 +31,8 @@ def get_secrets():
     if session is None:
         raise Exception("Failed to create session")
 
-    client = session.client(service_name="secretsmanager", region_name="us-east-2")
+    client = session.client(
+        service_name="secretsmanager", region_name="us-east-2")
 
     get_secret_value_response = client.get_secret_value(
         SecretId="huskerly-secrets-user"
