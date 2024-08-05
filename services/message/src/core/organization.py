@@ -13,7 +13,8 @@ def get_perm_level(user_email: str, org_id: Optional[int] = None) -> str:
         perm_level = requests.get(user_perm_endpoint + f"{user_email}")
     else:
         print("getting user perms with org_id: ", user_email, org_id)
-        perm_level = requests.get(user_perm_endpoint + f"{user_email}/{org_id}")
+        perm_level = requests.get(
+            user_perm_endpoint + f"{user_email}/{org_id}")
     print("perm_level (type):", type(perm_level.json()))
     print("perm_level (value):", perm_level.json())
     return perm_level.json()
@@ -50,7 +51,7 @@ def create_org(org_name: str, creator_email: str) -> int:
         cursor.execute(
             """
             INSERT INTO organizations (name, created_by_email)
-            VALUES (%s, %s, %s)
+            VALUES (%s, %s)
             """,
             (org_name, creator_email),
         )
@@ -68,7 +69,8 @@ def transfer_lead_admin(
     with get_cursor() as cursor:
 
         if not check_full_admin_perm(current_user_email, org_id):
-            raise Exception("User does not have permission to perform this action")
+            raise Exception(
+                "User does not have permission to perform this action")
 
         print(
             "Transferring lead admin for org_id:",
@@ -105,7 +107,8 @@ def edit_org(org_id: int, current_user_email: str, org_name: str) -> bool:
         print("Editing org with org_id:", org_id, "and org_name:", org_name)
 
         if not check_assist_admin_perm(current_user_email, org_id):
-            raise Exception("User does not have permission to perform this action")
+            raise Exception(
+                "User does not have permission to perform this action")
 
         cursor.execute(
             """
@@ -144,7 +147,8 @@ def delete_org(org_id: int, current_user_email: str) -> bool:
     with get_cursor() as cursor:
 
         if not check_assist_admin_perm(current_user_email, org_id):
-            raise Exception("User does not have permission to perform this action")
+            raise Exception(
+                "User does not have permission to perform this action")
 
         cursor.execute(
             """
