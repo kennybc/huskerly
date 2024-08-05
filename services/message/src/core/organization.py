@@ -34,7 +34,7 @@ def check_assist_admin_perm(current_user_email: str, org_id: Optional[int] = Non
 def check_full_admin_perm(current_user_email: str, org_id: Optional[int] = None) -> bool:
     perm_level = get_perm_level(current_user_email, org_id)
     print("Checking full admin perm for:", perm_level)
-    return perm_level in ['SYS_ADMIN', 'ORG_ADMIN']
+    return perm_level.json() in ['SYS_ADMIN', 'ORG_ADMIN']
 
 
 def check_in_org(user_email: str, org_id: int) -> bool:
@@ -67,6 +67,22 @@ def transfer_lead_admin(org_id: int, new_lead_admin_email: str, current_user_ema
 
         cursor.execute(
             """
+        SELECT id, name, deleted
+        FROM organizations
+        WHERE id = %s
+        """, (org_id,))
+
+        org = cursor.fetchone()
+        if org is None:
+            print("Organization with org_id:", org_id, "does not exist.")
+            raise Exception("Organization does not exist")
+
+        if org[2]:
+            print("Organization with org_id:", org_id, "is marked as deleted.")
+            raise Exception("Organization is deleted")
+
+        cursor.execute(
+            """
             UPDATE organizations
             SET lead_admin_email = %s
             WHERE id = %s AND deleted = FALSE
@@ -83,25 +99,21 @@ def edit_org(org_id: int, current_user_email: str, org_name: str) -> bool:
             raise Exception(
                 "User does not have permission to perform this action")
 
-        print("User has permission to edit org")
+        cursor.execute(
+            """
+            SELECT id, name, deleted
+            FROM organizations
+            WHERE id = %s
+            """, (org_id,))
 
-        # cursor.execute(
-        #     """
-        #     SELECT id, name, deleted
-        #     FROM organizations
-        #     WHERE id = %s
-        #     """, (org_id,))
+        org = cursor.fetchone()
+        if org is None:
+            print("Organization with org_id:", org_id, "does not exist.")
+            raise Exception("Organization does not exist")
 
-        # org = cursor.fetchone()
-        # if org is None:
-        #     print("Organization with org_id:", org_id, "does not exist.")
-        #     return False
-
-        # print("Current organization data:", org)
-
-        # if org[2]:
-        #     print("Organization with org_id:", org_id, "is marked as deleted.")
-        #     return False
+        if org[2]:
+            print("Organization with org_id:", org_id, "is marked as deleted.")
+            raise Exception("Organization is deleted")
 
         # Perform the update
         cursor.execute(
