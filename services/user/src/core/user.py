@@ -1,5 +1,5 @@
 from utils.connect import connect_to_invites_database
-from utils.aws import assume_role, get_aws_secret
+from utils.aws import get_session, get_aws_secret
 from datetime import datetime, timedelta
 from typing import List, Optional
 
@@ -8,7 +8,7 @@ pool_id = get_aws_secret("huskerly_userpool_id")["id"]
 
 def get_all_users_from_userpool(user_pool_id=pool_id):
     # Create a Cognito Identity Provider client
-    session = assume_role()
+    session = get_session()
     client = session.client('cognito-idp', region_name='us-east-2')
 
     all_users = []
@@ -40,7 +40,7 @@ def get_all_users_from_userpool(user_pool_id=pool_id):
 
 def get_user_from_userpool(username, user_pool_id=pool_id):
     # Create a Cognito Identity Provider client
-    session = assume_role()
+    session = get_session()
     client = session.client('cognito-idp', region_name='us-east-2')
 
     # Get the user
@@ -72,7 +72,7 @@ def get_user_permission_level(user_email: str, org_id: Optional[int] = None):
     Raises:
     Exception: If the user cannot be verified in Cognito or if the user is not authorized to invite to the organization.
     """
-    session = assume_role()
+    session = get_session()
     client = session.client('cognito-idp', region_name='us-east-2')
 
     # TODO:
@@ -236,7 +236,7 @@ def join_org(org_id: int, user_email: str) -> int:
             """, (org_id, user_email))
 
         # Update the user attribute in Cognito with the organization ID
-        session = assume_role()
+        session = get_session()
         client = session.client('cognito-idp', region_name='us-east-2')
 
         response = client.admin_update_user_attributes(
