@@ -7,22 +7,23 @@ session_duration = 1200  # How many seconds a session is valid for
 
 
 def get_session():
-    global global_session_info
+    # global global_session_info
 
-    # Check if at least 5 minutes remain before the session expires
-    future_time = datetime.now(timezone.utc) + timedelta(minutes=5)
+    # # Check if at least 5 minutes remain before the session expires
+    # future_time = datetime.now(timezone.utc) + timedelta(minutes=5)
 
-    if global_session_info["session"] and future_time < global_session_info["expiry"]:
-        return global_session_info["session"]
+    # if global_session_info["session"] and future_time < global_session_info["expiry"]:
+    #     return global_session_info["session"]
 
-    session = boto3.Session()
+    # session = boto3.Session()
 
-    expiry_time = datetime.now(timezone.utc) + \
-        timedelta(seconds=session_duration)
+    # expiry_time = datetime.now(timezone.utc) + \
+    #     timedelta(seconds=session_duration)
 
-    global_session_info["session"] = session
-    global_session_info["expiry"] = expiry_time
-    return session
+    # global_session_info["session"] = session
+    # global_session_info["expiry"] = expiry_time
+    # return session
+    return boto3.Session()
 
 
 def get_secrets():
