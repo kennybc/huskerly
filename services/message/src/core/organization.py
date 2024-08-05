@@ -101,7 +101,7 @@ def edit_org(org_id: int, current_user_email: str, org_name: str) -> bool:
 
         print("Current organization data:", org)
 
-        if org['deleted']:
+        if org[2]:
             print("Organization with org_id:", org_id, "is marked as deleted.")
             return False
 
