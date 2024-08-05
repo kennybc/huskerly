@@ -1,6 +1,6 @@
 from typing import Optional
 from utils.connect import get_cursor
-from services.message.src.utils.secrets import get_secrets
+from utils.secrets import get_secrets
 import requests
 
 secrets = get_secrets("huskerly-secrets-message")
