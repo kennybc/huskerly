@@ -280,7 +280,12 @@ def update_org_request(org_name: str, creator_email: str, current_user_email: st
             """,
             (org_name, creator_email),
         )
-        created_by_email = cursor.fetchone()[0]
+        request = cursor.fetchone()
+        if not request:
+            raise UserError(
+                f"""Organization request for {
+                    org_name} does not exist.""")
+        created_by_email = request[0]
 
         if created_by_email is None:
             raise UserError(
