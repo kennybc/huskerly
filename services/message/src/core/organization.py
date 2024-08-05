@@ -3,7 +3,7 @@ from utils.connect import get_cursor
 from utils.secrets import get_secrets
 import requests
 
-secrets = get_secrets("huskerly-secrets-message")
+secrets = get_secrets()
 org_user_endpoint, user_perm_endpoint = secrets["org_user_ep"], secrets["user_perm_ep"]
 
 
