@@ -11,7 +11,7 @@ class OrgCreateRequest(BaseModel):
     creator_email: str
 
 
-@router.post("", response_model=int)
+@router.post("", response_model=dict)
 def create_org(request: OrgCreateRequest):
     try:
         org_id = organization.create_org(
