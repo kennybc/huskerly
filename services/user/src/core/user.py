@@ -137,8 +137,7 @@ def promote_assist_admin_to_admin(org_id: int, user_email: str) -> bool:
     client = session.client('cognito-idp', region_name='us-east-2')
 
     current_role = get_user_permission_level(user_email, org_id)
-    print("CURRENT ORG ADMIN: ", get_org_admin(org_id))
-    current_org_admin_email = get_org_admin(org_id)['Username']
+    current_org_admin = get_org_admin(org_id)
 
     if current_role == 'ASSIST_ADMIN':
         client.admin_update_user_attributes(
@@ -151,16 +150,17 @@ def promote_assist_admin_to_admin(org_id: int, user_email: str) -> bool:
                 }
             ]
         )
-        client.admin_update_user_attributes(
-            UserPoolId=pool_id,
-            Username=current_org_admin_email,
-            UserAttributes=[
-                {
-                    'Name': 'custom:OrgRoll',
-                    'Value': 'ASSIST_ADMIN'
-                }
-            ]
-        )
+        if current_org_admin:
+            client.admin_update_user_attributes(
+                UserPoolId=pool_id,
+                Username=current_org_admin['Username'],
+                UserAttributes=[
+                    {
+                        'Name': 'custom:OrgRoll',
+                        'Value': 'ASSIST_ADMIN'
+                    }
+                ]
+            )
         return True
     else:
         raise Exception(f"""Error while promoting user {
