@@ -64,6 +64,10 @@ def get_all_users_from_userpool_with_org_id(org_id, user_pool_id=pool_id):
     }
 
 
+def get_org_admin(org_id: int, user_pool_id=pool_id):
+    return get_all_users_from_userpool_with_org_id(org_id, user_pool_id)['org_admin']
+
+
 def get_user_from_userpool(username, user_pool_id=pool_id):
     # Create a Cognito Identity Provider client
     session = get_session()
@@ -133,8 +137,8 @@ def promote_assist_admin_to_admin(org_id: int, user_email: str) -> bool:
     client = session.client('cognito-idp', region_name='us-east-2')
 
     current_role = get_user_permission_level(user_email, org_id)
-    current_org_admin_email = get_all_users_from_userpool_with_org_id(org_id)[
-        'org_admin']['email']
+    print("CURRENT ORG ADMIN: ", get_org_admin(org_id))
+    current_org_admin_email = get_org_admin(org_id)['email']
 
     if current_role == 'ASSIST_ADMIN':
         client.admin_update_user_attributes(
