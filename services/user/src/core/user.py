@@ -138,7 +138,7 @@ def promote_assist_admin_to_admin(org_id: int, user_email: str) -> bool:
 
     current_role = get_user_permission_level(user_email, org_id)
     print("CURRENT ORG ADMIN: ", get_org_admin(org_id))
-    current_org_admin_email = get_org_admin(org_id)['email']
+    current_org_admin_email = get_org_admin(org_id)['Username']
 
     if current_role == 'ASSIST_ADMIN':
         client.admin_update_user_attributes(
