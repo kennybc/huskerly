@@ -1,6 +1,6 @@
 import mysql.connector
 from mysql.connector import pooling
-from services.message.src.utils.secrets import get_secrets
+from secrets import get_secrets
 from contextlib import contextmanager
 
 invites_connection_pool = None
