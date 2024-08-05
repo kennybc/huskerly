@@ -5,8 +5,7 @@ from fastapi import File, UploadFile, FastAPI
 from typing import List
 
 
-app = FastAPI()
-
+app = FastAPI(root_path="/upload")
 bucket = boto3.resource("s3").Bucket("huskerly-attachments")
 
 
