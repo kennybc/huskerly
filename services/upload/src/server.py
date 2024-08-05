@@ -1,7 +1,7 @@
 import os
 import boto3
 import uuid
-from fastapi import File, UploadFile, Form, FastAPI
+from fastapi import File, UploadFile, FastAPI
 from typing import List
 
 
