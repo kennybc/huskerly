@@ -44,14 +44,17 @@ def get_all_users_from_userpool_with_org_id(org_id, user_pool_id=pool_id):
         if any(attr['Name'] == 'custom:OrgId' and attr['Value'] == str(org_id) for attr in user['Attributes'])
     ]
 
-    org_admin = list(filter(
-        lambda user: user['Attributes']['custom:OrgId'] == 'ORG_ADMIN', filtered_users))[0]
-    assist_admins = list(filter(
-        lambda user: user['Attributes']['custom:OrgId'] == 'ASSIST_ADMIN', filtered_users))
-    members = list(filter(
-        lambda user: user['Attributes']['custom:OrgId'] == 'MEMBER', filtered_users))
-    other_users = list(filter(
-        lambda user: user['Attributes']['custom:OrgId'] not in ['ORG_ADMIN', 'ASSIST_ADMIN', 'MEMBER'], filtered_users))
+    def get_user_role(user, role):
+        return any(attr['Name'] == 'custom:OrgRoll' and attr['Value'] == role for attr in user['Attributes'])
+
+    org_admin = next(
+        (user for user in filtered_users if get_user_role(user, 'ORG_ADMIN')), None)
+    assist_admins = [
+        user for user in filtered_users if get_user_role(user, 'ASSIST_ADMIN')]
+    members = [
+        user for user in filtered_users if get_user_role(user, 'MEMBER')]
+    other_users = [user for user in filtered_users if not get_user_role(
+        user, 'ORG_ADMIN') and not get_user_role(user, 'ASSIST_ADMIN') and not get_user_role(user, 'MEMBER')]
 
     return {
         'org_admin': org_admin,
