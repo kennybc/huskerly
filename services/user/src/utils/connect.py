@@ -1,7 +1,7 @@
 import mysql.connector
 from mysql.connector import pooling
 from utils.error import ServerError, UserError
-from secrets import get_secrets
+from utils.secrets import get_secrets
 from contextlib import contextmanager
 from botocore.exceptions import NoCredentialsError, ClientError, EndpointConnectionError
 
