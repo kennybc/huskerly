@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from botocore.exceptions import NoCredentialsError, ClientError, EndpointConnectionError
 
 invites_connection_pool = None
-secrets = get_secrets
+secrets = get_secrets()
 
 
 def initialize_db_connection():
