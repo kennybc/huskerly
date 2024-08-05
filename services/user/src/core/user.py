@@ -256,6 +256,7 @@ def create_org(org_name: str, current_user_email: str) -> int:
 
     if response.status_code == 200:
         response_data = response.json()
+        print("!!!response_data:", response_data)
         org_id = response_data.get("org_id")
         # org_id = response_data
         if org_id:
