@@ -48,9 +48,9 @@ def create_org(org_name: str, creator_email: str) -> int:
 
         cursor.execute(
             """
-            INSERT INTO organizations (name, created_by_email, lead_admin_email)
+            INSERT INTO organizations (name, created_by_email)
             VALUES (%s, %s, %s)
-            """, (org_name, creator_email, creator_email))
+            """, (org_name, creator_email))
 
         if cursor.rowcount == 1:
             cursor.execute("SELECT LAST_INSERT_ID()")
@@ -85,14 +85,9 @@ def transfer_lead_admin(org_id: int, new_lead_admin_email: str, current_user_ema
             print("Organization with org_id:", org_id, "is marked as deleted.")
             raise Exception("Organization is deleted")
 
-        cursor.execute(
-            """
-            UPDATE organizations
-            SET lead_admin_email = %s
-            WHERE id = %s AND deleted = FALSE
-            """, (new_lead_admin_email, org_id))
-
-        return cursor.rowcount == 1
+        # use user endpoint to transfer lead admin role
+        # TODO:
+        return False
 
 
 def edit_org(org_id: int, current_user_email: str, org_name: str) -> bool:
@@ -152,7 +147,7 @@ def get_org(org_id: int) -> dict:
     with get_cursor() as cursor:
         cursor.execute(
             """
-            SELECT name, lead_admin_email
+            SELECT name
             FROM organizations
             WHERE id = %s AND deleted = FALSE
             """, (org_id,))
@@ -164,6 +159,5 @@ def get_org(org_id: int) -> dict:
         users = requests.get(org_user_endpoint + f"{org_id}")
 
         org_info = {"name": result[0],
-                    "lead_admin_email": result[1],
                     "users": users.json()}
         return org_info
