@@ -1,11 +1,12 @@
 import mysql.connector
 from mysql.connector import pooling
 from server import ServerError, UserError
-from utils.aws import get_aws_secret
+from secrets import get_secrets
 from contextlib import contextmanager
 from botocore.exceptions import NoCredentialsError, ClientError, EndpointConnectionError
 
 invites_connection_pool = None
+secrets = get_secrets
 
 
 def initialize_db_connection():
@@ -14,19 +15,17 @@ def initialize_db_connection():
 
 
 def init_connection_pool(dbname):
-    secret_name = "huskerly-db-credentials"
-    credentials = get_aws_secret(secret_name)
     try:
         return pooling.MySQLConnectionPool(
-            pool_name="mypool",
+            pool_name="huskerly-message-db-pool",
             pool_size=8,  # Maximum number of connections
             pool_reset_session=True,
             database=dbname,
-            user=credentials['username'],
-            password=credentials['password'],
-            host=credentials['host'],
+            user=secrets["db_user"],
+            password=secrets["db_pass"],
+            host=secrets["db_ep"],
             ssl_disabled=False,
-            connection_timeout=10
+            connection_timeout=10,
         )
     except mysql.connector.Error as err:
         raise ValueError(f"Error initializing connection pool: {err}")
