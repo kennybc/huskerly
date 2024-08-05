@@ -21,14 +21,17 @@ def post_attachment(files: List[UploadFile] = File(...)):
     for file in files:
         key = str(uuid.uuid4().hex)
         try:
+            content = file.file.read()
+            if len(content) > 10485760:
+                raise Exception("File size exceeds limit of 10 MB")
             bucket.put_object(
                 Key=key,
-                Body=file.file.read(),
+                Body=content,
                 ContentType=file.headers["content-type"],
             )
             keys.append(key)
         except Exception as e:
             print(f"Failed to upload file ({file.filename}): {e}")
-            return {"Status": "FAILED"}
+            return {"Status": "FAILED", "Error": e}
 
     return {"Status": "SUCCESS", "Keys": keys}
