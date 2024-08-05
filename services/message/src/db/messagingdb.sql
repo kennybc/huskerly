@@ -7,31 +7,35 @@ USE huskerlymessagingdb;
 CREATE TABLE organizations (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    active BOOLEAN DEFAULT TRUE NOT NULL,
+    deleted BOOLEAN DEFAULT FALSE NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
-    created_by_email VARCHAR(255) NOT NULL,
-    lead_admin_email VARCHAR(255) UNIQUE NOT NULL
+    created_by_email VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE teams (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255),
-    created_date TIMESTAMP DEFAULT NOW()
+    org_id BIGINT UNSIGNED,
+    created_date TIMESTAMP DEFAULT NOW(),
+    created_by_email VARCHAR(255) NOT NULL,
+    deleted BOOLEAN DEFAULT FALSE NOT NULL,
+    FOREIGN KEY (org_id) REFERENCES organizations(id)
 );
 
 CREATE TABLE chats (
     id SERIAL PRIMARY KEY,
-    chat_type ENUM('stream', 'direct_message') NOT NULL,
+    chat_type ENUM('STREAM', 'DIRECT_MESSAGE') NOT NULL,
     name VARCHAR(255),
     created_date TIMESTAMP DEFAULT NOW(),
+    deleted BOOLEAN DEFAULT FALSE NOT NULL,
     public BOOLEAN NOT NULL,
     team_id BIGINT UNSIGNED,
     org_id BIGINT UNSIGNED,
     FOREIGN KEY (team_id) REFERENCES teams(id),
     FOREIGN KEY (org_id) REFERENCES organizations(id),
     CHECK (
-        (chat_type = 'stream' AND team_id IS NOT NULL AND org_id IS NULL) OR
-        (chat_type = 'direct_message' AND org_id IS NOT NULL AND team_id IS NULL)
+        (chat_type = 'STREAM' AND team_id IS NOT NULL AND org_id IS NULL) OR
+        (chat_type = 'DIRECT_MESSAGE' AND org_id IS NOT NULL AND team_id IS NULL)
     )
 );
 
@@ -58,7 +62,7 @@ CREATE TABLE posts (
     chat_id BIGINT UNSIGNED,
     content VARCHAR(255),
     created_date TIMESTAMP DEFAULT NOW(),
-    visible BOOLEAN DEFAULT TRUE,
+    deleted BOOLEAN DEFAULT FALSE NOT NULL,
     edited_at TIMESTAMP,
     FOREIGN KEY (chat_id) REFERENCES chats(id),
     FOREIGN KEY (parent_post_id) REFERENCES posts(id) ON DELETE SET NULL

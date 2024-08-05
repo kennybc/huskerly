@@ -1,32 +1,19 @@
-from fastapi import Request, FastAPI
+from fastapi import FastAPI
 
-app = FastAPI(root_path="/message")
-connections = []
+from dms import routes as dm_routes
+from api import org_routes, team_routes, post_routes, stream_routes
+from utils.connect import initialize_db_connection
+
+app = FastAPI(root_path="/message", debug=True)
+app.include_router(dm_routes.router)
+app.include_router(stream_routes.router)
+app.include_router(post_routes.router)
+app.include_router(org_routes.router)
+app.include_router(team_routes.router)
+
+initialize_db_connection()
+
 
 @app.get("/")
 def get_root():
     return {"name": "ms-message", "data": "4"}
-
-@app.post("/ws/connect")
-async def ws_connect(req: Request):
-    body = await req.json()
-    print(body)
-    return {"status": 200}
-
-@app.post("/ws/disconnect")
-async def ws_disconnect(req: Request):
-    body = await req.json()
-    print(body)
-    return {"status": 200}
-
-@app.post("/ws/unknown")
-async def ws_unknown(req: Request):
-    body = await req.json()
-    print(body)
-    return {"status": 404}
-
-@app.post("/ws/send")
-async def ws_send(req: Request):
-    body = await req.json()
-    print(body)
-    return {"status": 200}
