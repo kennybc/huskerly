@@ -44,7 +44,21 @@ def get_all_users_from_userpool_with_org_id(org_id, user_pool_id=pool_id):
         if any(attr['Name'] == 'custom:OrgId' and attr['Value'] == str(org_id) for attr in user['Attributes'])
     ]
 
-    return filtered_users
+    org_admin = filtered_users.filter(
+        lambda user: user['Attributes']['custom:OrgId'] == 'ORG_ADMIN')[0]
+    assist_admins = filtered_users.filter(
+        lambda user: user['Attributes']['custom:OrgId'] == 'ASSIST_ADMIN')
+    members = filtered_users.filter(
+        lambda user: user['Attributes']['custom:OrgId'] == 'MEMBER')
+    other_users = filtered_users.filter(
+        lambda user: user['Attributes']['custom:OrgId'] not in ['ORG_ADMIN', 'ASSIST_ADMIN', 'MEMBER'])
+
+    return {
+        'org_admin': org_admin,
+        'assist_admins': assist_admins,
+        'members': members,
+        'other_users': other_users
+    }
 
 
 def get_user_from_userpool(username, user_pool_id=pool_id):
@@ -111,7 +125,97 @@ def get_user_permission_level(user_email: str, org_id: Optional[int] = None):
         return "NONE"
 
 
-def request_org(org_name: str, creator_email: str) -> str:
+def promote_assist_admin_to_admin(org_id: int, user_email: str) -> bool:
+    session = get_session()
+    client = session.client('cognito-idp', region_name='us-east-2')
+
+    current_role = get_user_permission_level(user_email, org_id)
+    current_org_admin_email = get_all_users_from_userpool_with_org_id(org_id)[
+        'org_admin']['email']
+
+    if current_role == 'ASSIST_ADMIN':
+        client.admin_update_user_attributes(
+            UserPoolId=pool_id,
+            Username=user_email,
+            UserAttributes=[
+                {
+                    'Name': 'custom:OrgRoll',
+                    'Value': 'ORG_ADMIN'
+                }
+            ]
+        )
+        client.admin_update_user_attributes(
+            UserPoolId=pool_id,
+            Username=current_org_admin_email,
+            UserAttributes=[
+                {
+                    'Name': 'custom:OrgRoll',
+                    'Value': 'ASSIST_ADMIN'
+                }
+            ]
+        )
+        return True
+    else:
+        raise Exception(f"""Error while promoting user {
+                        user_email} to organization admin.""")
+
+
+def promote_member_to_assist_admin(org_id: int, user_email: str) -> bool:
+    session = get_session()
+    client = session.client('cognito-idp', region_name='us-east-2')
+
+    current_role = get_user_permission_level(user_email, org_id)
+    if current_role == 'MEMBER':
+        client.admin_update_user_attributes(
+            UserPoolId=pool_id,
+            Username=user_email,
+            UserAttributes=[
+                {
+                    'Name': 'custom:OrgRoll',
+                    'Value': 'ASSIST_ADMIN'
+                }
+            ]
+        )
+        return True
+    else:
+        raise Exception(f"""Error while promoting user {
+                        user_email} to assist admin.""")
+
+
+def promote_user(org_id: int, user_email: str, target_role: str) -> bool:
+    if target_role == 'ORG_ADMIN':
+        return promote_assist_admin_to_admin(org_id, user_email)
+    elif target_role == 'ASSIST_ADMIN':
+        return promote_member_to_assist_admin(org_id, user_email)
+    else:
+        raise Exception(f"""Invalid role {target_role} provided.""")
+
+
+def demote_to_member(org_id: int, user_email: str) -> bool:
+    session = get_session()
+    client = session.client('cognito-idp', region_name='us-east-2')
+
+    current_role = get_user_permission_level(user_email, org_id)
+
+    if current_role == 'SYS_ADMIN':
+        raise Exception(f"""Cannot demote user {user_email} to member.""")
+    elif current_role in ['ORG_ADMIN', 'ASSIST_ADMIN']:
+        client.admin_update_user_attributes(
+            UserPoolId=pool_id,
+            Username=user_email,
+            UserAttributes=[
+                {
+                    'Name': 'custom:OrgRoll',
+                    'Value': 'MEMBER'
+                }
+            ])
+        return True
+    else:
+        raise Exception(f"""Error while demoting user {
+                        user_email} to member.""")
+
+
+def request_org(org_name: str, creator_email: str) -> bool:
     with get_cursor() as cursor:
         # TODO: add check to see if creator_email already in org
         cursor.execute(
@@ -120,15 +224,10 @@ def request_org(org_name: str, creator_email: str) -> str:
             VALUES (%s, %s)
             """, (org_name, creator_email))
 
-        if cursor.rowcount == 1:
-            request_status = "SUCCESS"
-        else:
-            request_status = "FAILED"  # TODO: this should be a more helpful message
-
-        return request_status
+        return cursor.rowcount == 1
 
 
-def create_org(org_name: str, current_user_email: str) -> str:
+def create_org(org_name: str, current_user_email: str) -> int:
     payload = {
         "org_name": org_name,
         "creator_email": current_user_email
@@ -138,17 +237,17 @@ def create_org(org_name: str, current_user_email: str) -> str:
 
     if response.status_code == 200:
         response_data = response.json()
-        # org_id = response_data.get("org_id")
-        org_id = response_data
+        org_id = response_data.get("org_id")
+        # org_id = response_data
         if org_id:
-            return org_id
+            return int(org_id)
         else:
             raise ValueError("org_id not found in the response")
     else:
         response.raise_for_status()
 
 
-def update_org_request(org_name: str, creator_email: str, current_user_email: str, status: str) -> str:
+def update_org_request(org_name: str, creator_email: str, current_user_email: str, status: str) -> bool:
     with get_cursor() as cursor:
         if get_user_permission_level(current_user_email) != "SYS_ADMIN":
             raise Exception(
@@ -183,11 +282,11 @@ def update_org_request(org_name: str, creator_email: str, current_user_email: st
             # )
 
             org_id = create_org(org_name, creator_email)
-            if invite_org(org_id, creator_email, current_user_email) != 'SUCCESS':
-                return 'FAILED'
+            if not invite_org(org_id, creator_email, current_user_email):
+                return False
 
-            if join_org(org_id, creator_email, 'ORG_ADMIN') == 'FAILED':
-                return 'FAILED'
+            if not join_org(org_id, creator_email, 'ORG_ADMIN'):
+                return False
         elif status == "REJECTED":
             cursor.execute(
                 """
@@ -198,7 +297,7 @@ def update_org_request(org_name: str, creator_email: str, current_user_email: st
         else:
             raise ValueError(f"""Invalid status {status} provided.""")
 
-        return status
+        return True
 
 
 def list_invites(user_email: str) -> List[dict]:
@@ -212,7 +311,7 @@ def list_invites(user_email: str) -> List[dict]:
         return invites
 
 
-def join_org(org_id: int, user_email: str, role: str = 'MEMBER') -> str:
+def join_org(org_id: int, user_email: str, role: str = 'MEMBER') -> bool:
     with get_cursor() as cursor:
         # Check if the user is already a member of an organization
         invited_user = get_user_from_userpool(user_email)
@@ -281,10 +380,10 @@ def join_org(org_id: int, user_email: str, role: str = 'MEMBER') -> str:
             raise Exception(f"""Failed to update user {
                             user_email} with organization {org_id} in Cognito.""")
 
-        return 'SUCCESS'
+        return True
 
 
-def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: int = 86400) -> str:
+def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: int = 86400) -> bool:
     with get_cursor() as cursor:
         inviter = get_user_from_userpool(inviter_email)
         if inviter is None:
@@ -312,10 +411,7 @@ def invite_org(org_id: int, invitee_email: str, inviter_email: str, lifetime: in
             ON DUPLICATE KEY UPDATE expiration_date = VALUES(expiration_date);
             """, (org_id, invitee_email, inviter_email, expiration_date))
 
-        if cursor.rowcount == 0:
-            return 'FAILED'
-
-        return 'SUCCESS'
+        return cursor.rowcount == 1
 
 
 def list_org_requests():
