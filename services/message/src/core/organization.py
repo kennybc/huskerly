@@ -27,14 +27,15 @@ def check_assist_admin_perm(current_user_email: str, org_id: Optional[int] = Non
     print("Checking assist admin perm for:", perm_level)
     res = perm_level in ['SYS_ADMIN', 'ORG_ADMIN', 'ASSIST_ADMIN']
     print("Result:", res)
-
     return res
 
 
 def check_full_admin_perm(current_user_email: str, org_id: Optional[int] = None) -> bool:
     perm_level = get_perm_level(current_user_email, org_id)
     print("Checking full admin perm for:", perm_level)
-    return perm_level in ['SYS_ADMIN', 'ORG_ADMIN']
+    res = perm_level in ['SYS_ADMIN', 'ORG_ADMIN']
+    print("Result:", res)
+    return res
 
 
 def check_in_org(user_email: str, org_id: int) -> bool:
@@ -64,6 +65,9 @@ def transfer_lead_admin(org_id: int, new_lead_admin_email: str, current_user_ema
         if not check_full_admin_perm(current_user_email, org_id):
             raise Exception(
                 "User does not have permission to perform this action")
+
+        print("Transferring lead admin for org_id:", org_id,
+              "to new_lead_admin_email:", new_lead_admin_email)
 
         cursor.execute(
             """
