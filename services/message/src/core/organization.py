@@ -34,7 +34,7 @@ def check_assist_admin_perm(current_user_email: str, org_id: Optional[int] = Non
 def check_full_admin_perm(current_user_email: str, org_id: Optional[int] = None) -> bool:
     perm_level = get_perm_level(current_user_email, org_id)
     print("Checking full admin perm for:", perm_level)
-    return perm_level.json() in ['SYS_ADMIN', 'ORG_ADMIN']
+    return perm_level in ['SYS_ADMIN', 'ORG_ADMIN']
 
 
 def check_in_org(user_email: str, org_id: int) -> bool:
@@ -88,7 +88,7 @@ def transfer_lead_admin(org_id: int, new_lead_admin_email: str, current_user_ema
             WHERE id = %s AND deleted = FALSE
             """, (new_lead_admin_email, org_id))
 
-        return cursor.rowcount == 1
+        return 'SUCCESS' if cursor.rowcount == 1 else 'FAILED'
 
 
 def edit_org(org_id: int, current_user_email: str, org_name: str) -> bool:
