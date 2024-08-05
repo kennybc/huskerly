@@ -1,7 +1,7 @@
 from botocore.exceptions import NoCredentialsError, ClientError, EndpointConnectionError
 from services.user.src.server import ServerError, UserError
 from utils.connect import get_cursor
-from services.user.src.utils.secrets import get_session, get_secrets
+from utils.secrets import get_session, get_secrets
 from datetime import datetime, timedelta
 from typing import List, Optional
 import requests

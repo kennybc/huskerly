@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Header, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-from core.user import get_user_from_userpool, get_user_permission_level, list_invites
+from core import user
 
 router = APIRouter()
 
@@ -27,7 +27,7 @@ def get_session_token(session_token: str = Header(...)):
 @router.get("/permission/{user_email}", response_model=dict)
 def get_permission(user_email):
     # try:
-    permission = get_user_permission_level(user_email)
+    permission = user.get_user_permission_level(user_email)
     return {'Status': 'SUCCESS', 'Permission': permission}
     # except Exception as e:
     #     raise HTTPException(
@@ -38,7 +38,7 @@ def get_permission(user_email):
 # TODO: should use session token
 def get_permission(user_email: str, org_id: int):
     # try:
-    permission = get_user_permission_level(user_email, org_id)
+    permission = user.get_user_permission_level(user_email, org_id)
     return {'Status': 'SUCCESS', 'Permission': permission}
     # except Exception as e:
     #     raise HTTPException(
@@ -48,7 +48,7 @@ def get_permission(user_email: str, org_id: int):
 @router.get("/invites/{user_email}", response_model=dict)
 def list_user_invites(user_email: str):
     # try:
-    invites = list_invites(user_email)
+    invites = user.list_invites(user_email)
     return {'Status': 'SUCCESS', 'Invites': invites}
     # except Exception as e:
     #     raise HTTPException(status_code=500, detail=f"""Error fetching invites for user {
