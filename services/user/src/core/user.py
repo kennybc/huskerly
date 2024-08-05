@@ -44,14 +44,14 @@ def get_all_users_from_userpool_with_org_id(org_id, user_pool_id=pool_id):
         if any(attr['Name'] == 'custom:OrgId' and attr['Value'] == str(org_id) for attr in user['Attributes'])
     ]
 
-    org_admin = filtered_users.filter(
-        lambda user: user['Attributes']['custom:OrgId'] == 'ORG_ADMIN')[0]
-    assist_admins = filtered_users.filter(
-        lambda user: user['Attributes']['custom:OrgId'] == 'ASSIST_ADMIN')
-    members = filtered_users.filter(
-        lambda user: user['Attributes']['custom:OrgId'] == 'MEMBER')
-    other_users = filtered_users.filter(
-        lambda user: user['Attributes']['custom:OrgId'] not in ['ORG_ADMIN', 'ASSIST_ADMIN', 'MEMBER'])
+    org_admin = filter(
+        lambda user: user['Attributes']['custom:OrgId'] == 'ORG_ADMIN', filtered_users)[0]
+    assist_admins = filter(
+        lambda user: user['Attributes']['custom:OrgId'] == 'ASSIST_ADMIN', filtered_users)
+    members = filter(
+        lambda user: user['Attributes']['custom:OrgId'] == 'MEMBER', filtered_users)
+    other_users = filter(
+        lambda user: user['Attributes']['custom:OrgId'] not in ['ORG_ADMIN', 'ASSIST_ADMIN', 'MEMBER'], filtered_users)
 
     return {
         'org_admin': org_admin,
@@ -217,7 +217,14 @@ def demote_to_member(org_id: int, user_email: str) -> bool:
 
 def request_org(org_name: str, creator_email: str) -> bool:
     with get_cursor() as cursor:
-        # TODO: add check to see if creator_email already in org
+        user = get_user_from_userpool(creator_email)
+        if user is None:
+            raise Exception(f"""User {creator_email} does not exist.""")
+        user_attributes = get_user_attributes(user)
+        if user_attributes.get('custom:UserStatus') == 'JOINED':
+            raise Exception(
+                f"""User {creator_email} is already a member of an organization.""")
+
         cursor.execute(
             """
             INSERT INTO organization_requests (org_name, created_by_email)
