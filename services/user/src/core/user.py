@@ -265,7 +265,7 @@ def create_org(org_name: str, current_user_email: str) -> int:
         raise ServerError("org_id not found in the response")
 
 
-def update_org_request(org_name: str, creator_email: str, current_user_email: str, status: str):
+def update_org_request(org_name: str, creator_email: str, current_user_email: str, status: str) -> Optional[int]:
     with get_cursor() as cursor:
         if get_user_permission_level(current_user_email) != "SYS_ADMIN":
             raise UserError(
@@ -312,6 +312,7 @@ def update_org_request(org_name: str, creator_email: str, current_user_email: st
             org_id = create_org(org_name, creator_email)
             invite_org(org_id, creator_email, current_user_email)
             join_org(org_id, creator_email, 'ORG_ADMIN')
+            return org_id
         elif status == "REJECTED":
             cursor.execute(
                 """
@@ -321,6 +322,7 @@ def update_org_request(org_name: str, creator_email: str, current_user_email: st
             """,
                 (org_name, creator_email),
             )
+            return None
         else:
             raise UserError(f"""Invalid status {status} provided.""")
 

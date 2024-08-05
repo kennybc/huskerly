@@ -32,10 +32,10 @@ class OrgApproveRequest(BaseModel):
 
 @router.put("/request", response_model=dict)
 def update_organization_request(request: OrgApproveRequest):
-    user.update_org_request(
+    org_id = user.update_org_request(
         request.org_name, request.creator_email,
         request.current_user_email, request.status)
-    return {'Status': 'SUCCESS'}
+    return {'Status': 'SUCCESS', 'org_id': org_id}
 
 
 class JoinRequest(BaseModel):
