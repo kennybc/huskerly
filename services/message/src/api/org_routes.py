@@ -36,6 +36,16 @@ def transfer_lead_admin(org_id: int, request: TransferOrgRequest):
         org_id, request.new_lead_admin_email, request.current_user_email)
     return {'Status': 'SUCCESS'}
 
+class PromoteToAssistAdminRequest(BaseModel):
+    promoted_user_email: str
+    current_user_email: str
+    
+@router.put("/{org_id}/promote", response_model=dict, tags=['Public'])
+def promote_to_assist_admin(org_id: int, request: PromoteToAssistAdminRequest):
+    organization.promote_to_assist_admin(
+        org_id, request.promoted_user_email, request.current_user_email)
+    return {'Status': 'SUCCESS'}
+
 class DemoteRequest(BaseModel):
     demoted_user_email: str
     current_user_email: str
