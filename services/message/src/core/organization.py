@@ -34,6 +34,7 @@ def get_perm_level(user_email: str, org_id: Optional[int] = None) -> str:
         endpoint = user_perm_endpoint + f"{user_email}/{org_id}"
         print("endpoint:", endpoint)
         response = requests.get(endpoint)
+    print("response:", response)
     if not response or response.status_code != 200:
         raise ServerError("Failed to get user permissions")
     perm_level = response['Permission']
