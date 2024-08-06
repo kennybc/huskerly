@@ -40,7 +40,7 @@ def check_org_perm_in(
     current_user_email, org_id: Optional[int] = None, acceptable_perms: list = []
 ) -> bool:
     perm_level = get_perm_level(current_user_email, org_id)
-    print("Checking perm in:", perm_level)
+    print("Checking perm in:", perm_level, acceptable_perms)
     res = perm_level in acceptable_perms
     print("Result:", res)
     return res
