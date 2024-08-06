@@ -5,6 +5,13 @@ from core import organization
 
 router = APIRouter(prefix="/org")
 
+class OrgGetAllRequest(BaseModel):
+    current_user_email: str
+    
+@router.get("", response_model=dict)
+def get_all_orgs(request: OrgGetAllRequest):
+    orgs = organization.get_all_orgs(request.current_user_email)
+    return {'Status': 'SUCCESS', 'Data': orgs}
 
 class OrgCreateRequest(BaseModel):
     org_name: str
