@@ -225,6 +225,7 @@ def demote_to_member(org_id: int, user_email: str):
 
 
 def request_org(org_name: str, creator_email: str):
+    #todo: CHECK IF USER ALREADY IS IN ORG
     with get_cursor() as cursor:
         user = get_user_from_userpool(creator_email)
         if user is None:
@@ -267,6 +268,7 @@ def create_org(org_name: str, current_user_email: str) -> int:
 
 
 def update_org_request(org_name: str, creator_email: str, current_user_email: str, status: str) -> Optional[int]:
+    #TODO: on approve, reject the user's other requests
     with get_cursor() as cursor:
         if get_user_permission_level(current_user_email) != "SYS_ADMIN":
             raise UserError(
