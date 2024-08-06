@@ -99,8 +99,12 @@ def transfer_lead_admin(
         if not check_org_exists_and_not_deleted(org_id):
             raise UserError("Organization does not exist or has been deleted")
         
+        promote_endpoint = org_user_endpoint + f"{org_id}/promote/"
+        payload = {
+            "user_email": "testuser1@email.com",
+            "target_role": "ORG_ADMIN"
+        }
         
-
         requests  
         
         return False
