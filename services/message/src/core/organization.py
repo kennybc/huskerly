@@ -36,7 +36,7 @@ def get_perm_level(user_email: str, org_id: Optional[int] = None) -> str:
     return perm_level.json()
 
 
-def check_perm_in(
+def check_org_perm_in(
     current_user_email, org_id: Optional[int] = None, acceptable_perms: list = []
 ) -> bool:
     perm_level = get_perm_level(current_user_email, org_id)
@@ -48,13 +48,13 @@ def check_perm_in(
 def check_assist_admin_perm(
     current_user_email: str, org_id: Optional[int] = None
 ) -> bool:
-    return check_perm_in(current_user_email, org_id, ['ASSIST_ADMIN', 'ORG_ADMIN', 'SYS_ADMIN'])
+    return check_org_perm_in(current_user_email, org_id, ['ASSIST_ADMIN', 'ORG_ADMIN', 'SYS_ADMIN'])
 
 
 def check_full_admin_perm(
     current_user_email: str, org_id: Optional[int] = None
 ) -> bool:
-    return check_perm_in(current_user_email, org_id, ['ORG_ADMIN', 'SYS_ADMIN'])
+    return check_org_perm_in(current_user_email, org_id, ['ORG_ADMIN', 'SYS_ADMIN'])
 
 def check_in_org(user_email: str, org_id: int) -> bool:
     return get_perm_level(user_email, org_id) != "NONE"

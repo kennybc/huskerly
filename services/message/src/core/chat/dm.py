@@ -1,10 +1,17 @@
-from core.organization import check_in_org
+from core.organization import check_in_org, check_org_exists_and_not_deleted
+from utils.error import UserError, ServerError
 from utils.connect import get_cursor
-from core.chat.shared import join_chat
+from core.chat.shared import check_chat_exists_and_not_deleted, check_chat_view_perm, join_chat
 
 
-def get_dm_info(dm_id: int) -> dict:
+def get_dm(current_user_email: str, dm_id: int) -> dict:
     with get_cursor() as cursor:
+        if not check_chat_exists_and_not_deleted(dm_id):
+            raise UserError("Stream does not exist or has been deleted")
+        
+        if not check_chat_view_perm(current_user_email, dm_id):
+            raise UserError("User does not have permission to view this stream")
+        
         cursor.execute(
             """
             SELECT c.name AS dm_name, cu.user_email
@@ -22,9 +29,12 @@ def get_dm_info(dm_id: int) -> dict:
 def create_dm(creator_email: str, other_user_email: str, org_id: int) -> int:
     with get_cursor() as cursor:
         dm_id = None
+        
+        if not check_org_exists_and_not_deleted(org_id):
+            raise UserError("Organization does not exist or has been deleted")
 
         if not check_in_org(creator_email, org_id) or not check_in_org(other_user_email, org_id):
-            raise Exception("Invalid user or organization")
+            raise UserError("One or both users not in given organization")
 
         dm_name = f"{creator_email} and {other_user_email}"
 
@@ -39,5 +49,7 @@ def create_dm(creator_email: str, other_user_email: str, org_id: int) -> int:
             dm_id = cursor.fetchone()[0]
             join_chat(dm_id, creator_email)
             join_chat(dm_id, other_user_email)
+        else:
+            raise ServerError("Failed to create direct message")
 
         return dm_id

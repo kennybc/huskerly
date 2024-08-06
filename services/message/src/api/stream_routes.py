@@ -5,12 +5,18 @@ from core.chat import stream, shared as chat
 
 router = APIRouter(prefix="/stream")
 
+class StreamGetRequest(BaseModel):
+    current_user_email: str
 
 @router.get("/{stream_id}/messages", response_model=dict)
-def get_posts(stream_id: int):
-    posts = chat.get_posts(stream_id)
+def get_posts(stream_id: int, request: StreamGetRequest):
+    posts = chat.get_posts(request.current_user_email, stream_id)
     return {'Status': 'SUCCESS', 'Posts': posts}
 
+@router.get("/{stream_id}", response_model=dict)
+def get_stream(stream_id: int, request: StreamGetRequest):
+    stream_data = stream.get_stream(request.current_user_email, stream_id)
+    return {'Status': 'SUCCESS', 'Data': stream_data}
 
 class JoinStreamRequest(BaseModel):
     user_email: str
@@ -22,7 +28,6 @@ def join_stream(stream_id: int, request: JoinStreamRequest):
     return {'Status': 'SUCCESS'}
 
 
-
 class StreamDeleteRequest(BaseModel):
     current_user_email: str
 
@@ -31,15 +36,6 @@ class StreamDeleteRequest(BaseModel):
 def delete_stream(stream_id: int, request: StreamDeleteRequest):
     stream.delete_stream(request.current_user_email, stream_id)
     return {'Status': 'SUCCESS'}
-
-class StreamGetRequest(BaseModel):
-    current_user_email: str
-
-@router.get("/{stream_id}", response_model=dict)
-def get_stream(stream_id: int, request: StreamGetRequest):
-    stream_data = stream.get_stream(request.current_user_email, stream_id)
-    return {'Status': 'SUCCESS', 'Data': stream_data}
-
 
 class StreamCreateRequest(BaseModel):
     stream_name: str
