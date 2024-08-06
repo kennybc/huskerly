@@ -1,12 +1,7 @@
 from fastapi import FastAPI
 
-<<<<<<< HEAD
-from services.message.src.api import message_routes as dm_routes
-from api import org_routes, team_routes, post_routes
-=======
 from dms import routes as dm_routes
 from api import org_routes, team_routes, post_routes, stream_routes
->>>>>>> ac009dd300831862820b5fdfd63a647fb27e95a7
 from utils.connect import initialize_db_connection
 
 app = FastAPI(root_path="/message", debug=True)
