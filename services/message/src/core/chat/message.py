@@ -101,6 +101,7 @@ class MessageHandler:
         except ValidationException:
             # If we're here, the user doesn't have a team, so no need to do any removal
             pass
+            
 
     # sends a message to everyone in a channel
     def send_to_channel(self, user_id, message):
@@ -122,8 +123,9 @@ class MessageHandler:
 
         # NEED TO CONTINUE HERE
         for recipient in users:
-            self.send_message(recipient, message)
+            self.send_message(recipient, [user_id, message])
 
+    # message inclues the sender's id and their message
     def send_message(self, recipient, message):
         try:
             response = self.client.post_to_connection(

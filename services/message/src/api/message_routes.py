@@ -1,7 +1,7 @@
 from typing import Any
 from fastapi import Body, APIRouter
 
-from dms.message import MessageHandler
+from services.message.src.core.chat.message import MessageHandler
 from dms.connection import ConnectionHandler
 
 router = APIRouter()
