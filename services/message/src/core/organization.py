@@ -119,7 +119,8 @@ def transfer_lead_admin(
         if not check_org_exists_and_not_deleted(org_id):
             raise UserError("Organization does not exist or has been deleted")
         
-        promote_endpoint = org_user_endpoint + f"{org_id}/promote/"
+        promote_endpoint = org_user_endpoint + f"{org_id}/promote"
+        print("Promote endpoint:", promote_endpoint)
         payload = {
             "user_email": new_lead_admin_email,
             "target_role": "ORG_ADMIN"
@@ -127,6 +128,7 @@ def transfer_lead_admin(
         
         try:
             response = requests.post(promote_endpoint, json=payload)
+            print("Response:", response.json())
             if not response or response.status_code != 200:
                 raise ServerError("Failed to transfer lead admin")
         except Exception:
