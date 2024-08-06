@@ -9,8 +9,7 @@ CREATE TABLE organizations (
     name VARCHAR(255) NOT NULL,
     deleted BOOLEAN DEFAULT FALSE NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
-    created_by_email VARCHAR(255) NOT NULL,
-    lead_admin_email VARCHAR(255) UNIQUE NOT NULL
+    created_by_email VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE teams (
