@@ -1,5 +1,4 @@
-from typing import List
-from fastapi import APIRouter, HTTPException, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
 from core.chat import stream, shared as chat
 
@@ -7,48 +6,39 @@ from core.chat import stream, shared as chat
 router = APIRouter(prefix="/stream")
 
 
-@router.get("/{stream_id}/messages", response_model=List[dict])
+@router.get("/{stream_id}/messages", response_model=dict)
 def get_posts(stream_id: int):
-    try:
-        return chat.get_posts(stream_id)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error getting posts: {str(e)}""")
+    posts = chat.get_posts(stream_id)
+    return {'Status': 'SUCCESS', 'Posts': posts}
 
 
 class JoinStreamRequest(BaseModel):
     user_email: str
 
 
-@router.post("/{stream_id}/join", response_model=bool)
+@router.post("/{stream_id}/join", response_model=dict)
 def join_stream(stream_id: int, request: JoinStreamRequest):
-    try:
-        return chat.join_chat(stream_id, request.user_email)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error joining stream: {str(e)}""")
+    chat.join_chat(stream_id, request.user_email)
+    return {'Status': 'SUCCESS'}
+
 
 
 class StreamDeleteRequest(BaseModel):
     current_user_email: str
 
 
-@router.post("/{stream_id}/delete", response_model=bool)
+@router.post("/{stream_id}/delete", response_model=dict)
 def delete_stream(stream_id: int, request: StreamDeleteRequest):
-    try:
-        return stream.delete_stream(request.current_user_email, stream_id)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error deleting stream: {str(e)}""")
+    stream.delete_stream(request.current_user_email, stream_id)
+    return {'Status': 'SUCCESS'}
 
+class StreamGetRequest(BaseModel):
+    current_user_email: str
 
 @router.get("/{stream_id}", response_model=dict)
-def get_stream(stream_id: int):
-    try:
-        return stream.get_stream(stream_id)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error getting stream: {str(e)}""")
+def get_stream(stream_id: int, request: StreamGetRequest):
+    stream_data = stream.get_stream(request.current_user_email, stream_id)
+    return {'Status': 'SUCCESS', 'Data': stream_data}
 
 
 class StreamCreateRequest(BaseModel):
@@ -57,13 +47,10 @@ class StreamCreateRequest(BaseModel):
     team_id: int
 
 
-@router.post("", response_model=int)
+@router.post("", response_model=dict)
 def create_stream(request: StreamCreateRequest):
-    try:
-        return stream.create_stream(request.stream_name, request.creator_email, request.team_id)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error registering stream: {str(e)}""")
+    stream_id = stream.create_stream(request.stream_name, request.creator_email, request.team_id)
+    return {'Status': 'SUCCESS', "stream_id": stream_id}
 
 
 class StreamEditRequest(BaseModel):
@@ -72,13 +59,10 @@ class StreamEditRequest(BaseModel):
     public: bool
 
 
-@router.put("/{stream_id}", response_model=bool)
+@router.put("/{stream_id}", response_model=dict)
 def edit_stream(stream_id: int, request: StreamEditRequest):
-    try:
-        return stream.edit_stream(request.current_user_email, stream_id, request.stream_name, request.public)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error modifying stream: {str(e)}""")
+    stream.edit_stream(request.current_user_email, stream_id, request.stream_name, request.public)
+    return {'Status': 'SUCCESS'}
 
 
 class StreamLeaveRequest(BaseModel):
@@ -86,10 +70,7 @@ class StreamLeaveRequest(BaseModel):
     user_email: str
 
 
-@router.delete("/{stream_id}", response_model=bool)
+@router.delete("/{stream_id}", response_model=dict)
 def leave_stream(stream_id: int, request: StreamLeaveRequest):
-    try:
-        return stream.leave_stream(stream_id, request.current_user_email, request.user_email)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error leaving stream: {str(e)}""")
+    stream.leave_stream(stream_id, request.current_user_email, request.user_email)
+    return {'Status': 'SUCCESS'}
