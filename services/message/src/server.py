@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from dms import routes as dm_routes
+from services.message.src.api import message_routes as dm_routes
 from api import org_routes, team_routes, post_routes
 from utils.connect import initialize_db_connection
 
