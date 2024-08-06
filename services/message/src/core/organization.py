@@ -99,6 +99,34 @@ def create_org(org_name: str, creator_email: str) -> int:
             org_id = cursor.fetchone()[0]
 
         return org_id
+    
+def demote_to_member(org_id: int, user_email: str, current_user_email: str):
+    with get_cursor() as cursor:
+        if not check_full_admin_perm(current_user_email, org_id):
+            raise UserError(
+                "User does not have permission to perform this action")
+
+        print(
+            "Demoting user with user_email:", user_email, "to member for org_id:", org_id
+        )
+
+        if not check_org_exists_and_not_deleted(org_id):
+            raise UserError("Organization does not exist or has been deleted")
+        
+        demote_endpoint = org_user_endpoint + f"{org_id}/demote"
+        print("Demote endpoint:", demote_endpoint)
+        payload = {
+            "user_email": user_email,
+            "target_role": "MEMBER"
+        }
+        
+        try:
+            response = requests.put(demote_endpoint, json=payload)
+            print("Response:", response.json())
+            if not response or response.status_code != 200:
+                raise ServerError("Failed to demote user")
+        except Exception:
+            raise ServerError(f"""Failed to demote user""")
 
 
 def transfer_lead_admin(
