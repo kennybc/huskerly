@@ -129,9 +129,8 @@ def transfer_lead_admin(
             response = requests.post(promote_endpoint, json=payload)
             if not response or response.status_code != 200:
                 raise ServerError("Failed to transfer lead admin")
-        except Exception as e:
-            raise ServerError(f"""Error occurred while transferring lead admin role: {
-                          response.text}""") from e
+        except Exception:
+            raise ServerError(f"""Failed to transfer lead admin""")
         
 
 
