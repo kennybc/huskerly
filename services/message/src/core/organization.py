@@ -127,7 +127,7 @@ def transfer_lead_admin(
         }
         
         try:
-            response = requests.post(promote_endpoint, json=payload)
+            response = requests.put(promote_endpoint, json=payload)
             print("Response:", response.json())
             if not response or response.status_code != 200:
                 raise ServerError("Failed to transfer lead admin")
