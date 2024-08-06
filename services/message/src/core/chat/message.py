@@ -3,7 +3,7 @@ import json
 
 from utils.secrets import get_secrets
 from boto3.dynamodb.conditions import Attr
-import botocore.exceptions
+from botocore.exceptions import ValidationError
 
 
 class MessageHandler:
@@ -98,7 +98,7 @@ class MessageHandler:
                 ExpressionAttributeValues={":new_list": active_connections},
                 ReturnValues="UPDATED_NEW",
             )
-        except ValidationException:
+        except ValidationError:
             # If we're here, the user doesn't have a team, so no need to do any removal
             pass
             
