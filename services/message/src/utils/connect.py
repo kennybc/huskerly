@@ -1,7 +1,9 @@
 import mysql.connector
 from mysql.connector import pooling
-from .secrets import get_secrets
+from utils.error import ServerError, UserError
+from utils.secrets import get_secrets
 from contextlib import contextmanager
+from botocore.exceptions import NoCredentialsError, ClientError, EndpointConnectionError
 
 invites_connection_pool = None
 secrets = get_secrets()
@@ -16,7 +18,7 @@ def init_connection_pool(dbname):
     try:
         return pooling.MySQLConnectionPool(
             pool_name="huskerly-message-db-pool",
-            pool_size=8,  # Maximum number of connections
+            pool_size=16,  # Maximum number of connections
             pool_reset_session=True,
             database=dbname,
             user=secrets["db_user"],
@@ -48,9 +50,15 @@ def get_cursor():
     try:
         yield cursor
         conn.commit()
+    except (ClientError, NoCredentialsError, UserError, EndpointConnectionError) as e:
+        conn.rollback()
+        raise UserError(f"Client error: {str(e)}")
+    except (ServerError) as e:
+        conn.rollback()
+        raise ServerError(f"Server error: {str(e)}")
     except Exception as e:
         conn.rollback()
-        raise Exception(f"An error occurred: {e}")
+        raise ServerError(f"An unexpected error occurred: {str(e)}")
     finally:
         cursor.close()
         conn.close()

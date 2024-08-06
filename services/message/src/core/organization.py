@@ -1,10 +1,12 @@
 from typing import Optional
+from utils.error import UserError, ServerError
 from utils.connect import get_cursor
 from utils.secrets import get_secrets
 import requests
 
 secrets = get_secrets()
-org_user_endpoint, user_perm_endpoint = secrets["org_user_ep"], secrets["user_perm_ep"]
+user_endpoint = secrets["user_ep"]
+org_user_endpoint, user_perm_endpoint = user_endpoint + "org/", user_endpoint + "permission/"
 
 
 def get_perm_level(user_email: str, org_id: Optional[int] = None) -> str:
@@ -20,28 +22,28 @@ def get_perm_level(user_email: str, org_id: Optional[int] = None) -> str:
     return perm_level.json()
 
 
+def check_perm_in(
+    current_user_email, org_id: Optional[int] = None, acceptable_perms: list = []
+) -> bool:
+    perm_level = get_perm_level(current_user_email, org_id)
+    print("Checking perm in:", perm_level)
+    res = perm_level in acceptable_perms
+    print("Result:", res)
+    return res
+
 def check_assist_admin_perm(
     current_user_email: str, org_id: Optional[int] = None
 ) -> bool:
-    perm_level = get_perm_level(current_user_email, org_id)
-    print("Checking assist admin perm for:", perm_level)
-    res = perm_level in ["SYS_ADMIN", "ORG_ADMIN", "ASSIST_ADMIN"]
-    print("Result:", res)
-    return res
+    return check_perm_in(current_user_email, org_id, ['ASSIST_ADMIN', 'ORG_ADMIN', 'SYS_ADMIN'])
 
 
 def check_full_admin_perm(
     current_user_email: str, org_id: Optional[int] = None
 ) -> bool:
-    perm_level = get_perm_level(current_user_email, org_id)
-    print("Checking full admin perm for:", perm_level)
-    res = perm_level in ["SYS_ADMIN", "ORG_ADMIN"]
-    print("Result:", res)
-    return res
-
+    return check_perm_in(current_user_email, org_id, ['ORG_ADMIN', 'SYS_ADMIN'])
 
 def check_in_org(user_email: str, org_id: int) -> bool:
-    return get_perm_level(user_email, org_id) == "NONE"
+    return get_perm_level(user_email, org_id) != "NONE"
 
 
 def create_org(org_name: str, creator_email: str) -> int:
@@ -65,11 +67,11 @@ def create_org(org_name: str, creator_email: str) -> int:
 
 def transfer_lead_admin(
     org_id: int, new_lead_admin_email: str, current_user_email: str
-) -> bool:
+):
     with get_cursor() as cursor:
 
         if not check_full_admin_perm(current_user_email, org_id):
-            raise Exception(
+            raise UserError(
                 "User does not have permission to perform this action")
 
         print(
@@ -91,23 +93,25 @@ def transfer_lead_admin(
         org = cursor.fetchone()
         if org is None:
             print("Organization with org_id:", org_id, "does not exist.")
-            raise Exception("Organization does not exist")
+            raise UserError("Organization does not exist")
 
         if org[2]:
             print("Organization with org_id:", org_id, "is marked as deleted.")
-            raise Exception("Organization is deleted")
+            raise UserError("Organization is deleted")
+        
+        
 
-        # use user endpoint to transfer lead admin role
-        # TODO:
+        requests  
+        
         return False
 
 
-def edit_org(org_id: int, current_user_email: str, org_name: str) -> bool:
+def edit_org(org_id: int, current_user_email: str, org_name: str):
     with get_cursor() as cursor:
         print("Editing org with org_id:", org_id, "and org_name:", org_name)
 
         if not check_assist_admin_perm(current_user_email, org_id):
-            raise Exception(
+            raise UserError(
                 "User does not have permission to perform this action")
 
         cursor.execute(
@@ -122,11 +126,11 @@ def edit_org(org_id: int, current_user_email: str, org_name: str) -> bool:
         org = cursor.fetchone()
         if org is None:
             print("Organization with org_id:", org_id, "does not exist.")
-            raise Exception("Organization does not exist")
+            raise UserError("Organization does not exist")
 
         if org[2]:
             print("Organization with org_id:", org_id, "is marked as deleted.")
-            raise Exception("Organization is deleted")
+            raise UserError("Organization is deleted")
 
         # Perform the update
         cursor.execute(
@@ -140,15 +144,31 @@ def edit_org(org_id: int, current_user_email: str, org_name: str) -> bool:
 
         # print("Rowcount after update:", cursor.rowcount)
 
-        return cursor.rowcount == 1
+        if not cursor.rowcount == 1:
+            print("Failed to update organization with org_id:", org_id)
+            raise ServerError("Failed to update organization")
 
 
-def delete_org(org_id: int, current_user_email: str) -> bool:
+def delete_org(org_id: int, current_user_email: str):
     with get_cursor() as cursor:
 
         if not check_assist_admin_perm(current_user_email, org_id):
-            raise Exception(
+            raise UserError(
                 "User does not have permission to perform this action")
+            
+        cursor.execute(
+            """
+            SELECT name, deleted
+            FROM organizations
+            WHERE id = %s
+            """, (org_id,)
+        )
+        
+        name, deleted = cursor.fetchone()
+        if not name:
+            raise UserError("Organization does not exist")
+        if deleted:
+            raise UserError("Organization is already deleted")
 
         cursor.execute(
             """
@@ -158,7 +178,9 @@ def delete_org(org_id: int, current_user_email: str) -> bool:
             """,
             (org_id,),
         )
-        return cursor.rowcount == 1
+        
+        if not cursor.rowcount == 1:
+            raise ServerError("Failed to delete organization")
 
 
 def get_org(org_id: int) -> dict:
@@ -176,7 +198,10 @@ def get_org(org_id: int) -> dict:
         if result is None:
             return {}
 
-        users = requests.get(org_user_endpoint + f"{org_id}")
+        response = requests.get(org_user_endpoint + f"{org_id}")
+        if not response or response.status_code != 200:
+            raise ServerError("Failed to get organization users")
+        users = response.json()["Users"]
 
-        org_info = {"name": result[0], "users": users.json()}
+        org_info = {"Name": result[0], "Users": users}
         return org_info
