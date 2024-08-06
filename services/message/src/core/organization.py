@@ -84,7 +84,6 @@ def transfer_lead_admin(
     org_id: int, new_lead_admin_email: str, current_user_email: str
 ):
     with get_cursor() as cursor:
-
         if not check_full_admin_perm(current_user_email, org_id):
             raise UserError(
                 "User does not have permission to perform this action")
@@ -101,13 +100,18 @@ def transfer_lead_admin(
         
         promote_endpoint = org_user_endpoint + f"{org_id}/promote/"
         payload = {
-            "user_email": "testuser1@email.com",
+            "user_email": new_lead_admin_email,
             "target_role": "ORG_ADMIN"
         }
         
-        requests  
+        try:
+            response = requests.post(promote_endpoint, json=payload)
+            if not response or response.status_code != 200:
+                raise ServerError("Failed to transfer lead admin")
+        except Exception as e:
+            raise ServerError(f"""Error occurred while transferring lead admin role: {
+                          response.text}""") from e
         
-        return False
 
 
 def edit_org(org_id: int, current_user_email: str, org_name: str):
