@@ -8,7 +8,6 @@ secrets = get_secrets()
 user_endpoint = secrets["user_ep"]
 org_user_endpoint, user_perm_endpoint = user_endpoint + "org/", user_endpoint + "permission/"
 
-
 def check_org_exists_and_not_deleted(org_id: int) -> bool:
     with get_cursor() as cursor:
         cursor.execute(
@@ -64,6 +63,24 @@ def check_full_admin_perm(
 
 def check_in_org(user_email: str, org_id: int) -> bool:
     return get_perm_level(user_email, org_id) != "NONE"
+
+
+def get_all_orgs(current_user_email: str) -> list:
+    with get_cursor() as cursor:
+        if not check_full_admin_perm(current_user_email):
+            raise UserError(
+                "User does not have permission to perform this action")
+        
+        cursor.execute(
+            """
+            SELECT id, name
+            FROM organizations
+            WHERE deleted = FALSE
+            """
+        )
+
+        orgs = cursor.fetchall()
+        return orgs
 
 
 def create_org(org_name: str, creator_email: str) -> int:
