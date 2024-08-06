@@ -18,7 +18,7 @@ def init_connection_pool(dbname):
     try:
         return pooling.MySQLConnectionPool(
             pool_name="huskerly-message-db-pool",
-            pool_size=16,  # Maximum number of connections
+            pool_size=8,  # Maximum number of connections
             pool_reset_session=True,
             database=dbname,
             user=secrets["db_user"],
