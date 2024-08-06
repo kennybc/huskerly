@@ -16,8 +16,7 @@ def check_org_exists_and_not_deleted(org_id: int) -> bool:
             SELECT deleted
             FROM organizations
             WHERE id = %s
-            """,
-            (org_id,),
+            """, (org_id,),
         )
 
         result = cursor.fetchone()
@@ -69,8 +68,7 @@ def create_org(org_name: str, creator_email: str) -> int:
             """
             INSERT INTO organizations (name, created_by_email)
             VALUES (%s, %s)
-            """,
-            (org_name, creator_email),
+            """, (org_name, creator_email),
         )
 
         if cursor.rowcount == 1:
@@ -157,8 +155,7 @@ def delete_org(org_id: int, current_user_email: str):
             UPDATE organizations
             SET deleted = TRUE
             WHERE id = %s
-            """,
-            (org_id,),
+            """, (org_id,),
         )
         
         if not cursor.rowcount == 1:
@@ -175,8 +172,7 @@ def get_org(org_id: int) -> dict:
             SELECT name
             FROM organizations
             WHERE id = %s AND deleted = FALSE
-            """,
-            (org_id,),
+            """, (org_id,),
         )
 
         result = cursor.fetchone()
