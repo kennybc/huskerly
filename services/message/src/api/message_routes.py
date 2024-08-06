@@ -30,7 +30,7 @@ async def ws_unknown(req: Any = Body(None)):
 async def ws_send(req: Any = Body(None)):
     print("\nAttempting message from " + req["connectionId"])
     message_h.send_to_channel(req["connectionId"], req["payload"]["message"])
-    
+    return {"status" : 200}
 
 
 @router.post("/ws/joinChannel")
