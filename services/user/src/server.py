@@ -29,7 +29,7 @@ app.include_router(org_routes.router)
 async def user_error_handler(request, exc: UserError):
     return JSONResponse(
         status_code=400,
-        content={"status": "FAILED", "detail": exc.message},
+        content={"Status": "FAILED", "Detail": exc.message},
     )
 
 
@@ -37,7 +37,7 @@ async def user_error_handler(request, exc: UserError):
 async def server_error_handler(request, exc: ServerError):
     return JSONResponse(
         status_code=500,
-        content={"status": "FAILED", "detail": exc.message},
+        content={"Status": "FAILED", "Detail": exc.message},
     )
 
 
