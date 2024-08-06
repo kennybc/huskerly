@@ -9,24 +9,44 @@ user_endpoint = secrets["user_ep"]
 org_user_endpoint, user_perm_endpoint = user_endpoint + "org/", user_endpoint + "permission/"
 
 
+def check_org_exists_and_not_deleted(org_id: int) -> bool:
+    with get_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT deleted
+            FROM organizations
+            WHERE id = %s
+            """, (org_id,),
+        )
+
+        result = cursor.fetchone()
+        return result is not None and not result[0]
+
+
 def get_perm_level(user_email: str, org_id: Optional[int] = None) -> str:
     if org_id is None:
         print("getting user perms without org_id: ", user_email)
-        perm_level = requests.get(user_perm_endpoint + f"{user_email}")
+        endpoint = user_perm_endpoint + f"{user_email}"
+        print("endpoint:", endpoint)
+        response = requests.get(endpoint)
     else:
         print("getting user perms with org_id: ", user_email, org_id)
-        perm_level = requests.get(
-            user_perm_endpoint + f"{user_email}/{org_id}")
-    print("perm_level (type):", type(perm_level.json()))
-    print("perm_level (value):", perm_level.json())
-    return perm_level.json()
+        endpoint = user_perm_endpoint + f"{user_email}/{org_id}"
+        print("endpoint:", endpoint)
+        response = requests.get(endpoint)
+    print("response:", response.json())
+    if not response or response.status_code != 200:
+        raise ServerError("Failed to get user permissions")
+    perm_level = response.json()['Permission']
+    print("perm_level:", perm_level)
+    return perm_level
 
 
-def check_perm_in(
+def check_org_perm_in(
     current_user_email, org_id: Optional[int] = None, acceptable_perms: list = []
 ) -> bool:
     perm_level = get_perm_level(current_user_email, org_id)
-    print("Checking perm in:", perm_level)
+    print("Checking perm in:", perm_level, acceptable_perms)
     res = perm_level in acceptable_perms
     print("Result:", res)
     return res
@@ -34,13 +54,13 @@ def check_perm_in(
 def check_assist_admin_perm(
     current_user_email: str, org_id: Optional[int] = None
 ) -> bool:
-    return check_perm_in(current_user_email, org_id, ['ASSIST_ADMIN', 'ORG_ADMIN', 'SYS_ADMIN'])
+    return check_org_perm_in(current_user_email, org_id, ['ASSIST_ADMIN', 'ORG_ADMIN', 'SYS_ADMIN'])
 
 
 def check_full_admin_perm(
     current_user_email: str, org_id: Optional[int] = None
 ) -> bool:
-    return check_perm_in(current_user_email, org_id, ['ORG_ADMIN', 'SYS_ADMIN'])
+    return check_org_perm_in(current_user_email, org_id, ['ORG_ADMIN', 'SYS_ADMIN'])
 
 def check_in_org(user_email: str, org_id: int) -> bool:
     return get_perm_level(user_email, org_id) != "NONE"
@@ -54,8 +74,7 @@ def create_org(org_name: str, creator_email: str) -> int:
             """
             INSERT INTO organizations (name, created_by_email)
             VALUES (%s, %s)
-            """,
-            (org_name, creator_email),
+            """, (org_name, creator_email),
         )
 
         if cursor.rowcount == 1:
@@ -69,7 +88,6 @@ def transfer_lead_admin(
     org_id: int, new_lead_admin_email: str, current_user_email: str
 ):
     with get_cursor() as cursor:
-
         if not check_full_admin_perm(current_user_email, org_id):
             raise UserError(
                 "User does not have permission to perform this action")
@@ -81,29 +99,23 @@ def transfer_lead_admin(
             new_lead_admin_email,
         )
 
-        cursor.execute(
-            """
-        SELECT id, name, deleted
-        FROM organizations
-        WHERE id = %s
-        """,
-            (org_id,),
-        )
-
-        org = cursor.fetchone()
-        if org is None:
-            print("Organization with org_id:", org_id, "does not exist.")
-            raise UserError("Organization does not exist")
-
-        if org[2]:
-            print("Organization with org_id:", org_id, "is marked as deleted.")
-            raise UserError("Organization is deleted")
+        if not check_org_exists_and_not_deleted(org_id):
+            raise UserError("Organization does not exist or has been deleted")
         
+        promote_endpoint = org_user_endpoint + f"{org_id}/promote/"
+        payload = {
+            "user_email": new_lead_admin_email,
+            "target_role": "ORG_ADMIN"
+        }
         
-
-        requests  
+        try:
+            response = requests.post(promote_endpoint, json=payload)
+            if not response or response.status_code != 200:
+                raise ServerError("Failed to transfer lead admin")
+        except Exception as e:
+            raise ServerError(f"""Error occurred while transferring lead admin role: {
+                          response.text}""") from e
         
-        return False
 
 
 def edit_org(org_id: int, current_user_email: str, org_name: str):
@@ -114,23 +126,8 @@ def edit_org(org_id: int, current_user_email: str, org_name: str):
             raise UserError(
                 "User does not have permission to perform this action")
 
-        cursor.execute(
-            """
-            SELECT id, name, deleted
-            FROM organizations
-            WHERE id = %s
-            """,
-            (org_id,),
-        )
-
-        org = cursor.fetchone()
-        if org is None:
-            print("Organization with org_id:", org_id, "does not exist.")
-            raise UserError("Organization does not exist")
-
-        if org[2]:
-            print("Organization with org_id:", org_id, "is marked as deleted.")
-            raise UserError("Organization is deleted")
+        if not check_org_exists_and_not_deleted(org_id):
+            raise UserError("Organization does not exist or has been deleted")
 
         # Perform the update
         cursor.execute(
@@ -156,27 +153,15 @@ def delete_org(org_id: int, current_user_email: str):
             raise UserError(
                 "User does not have permission to perform this action")
             
-        cursor.execute(
-            """
-            SELECT name, deleted
-            FROM organizations
-            WHERE id = %s
-            """, (org_id,)
-        )
-        
-        name, deleted = cursor.fetchone()
-        if not name:
-            raise UserError("Organization does not exist")
-        if deleted:
-            raise UserError("Organization is already deleted")
+        if not check_org_exists_and_not_deleted(org_id):
+            raise UserError("Organization does not exist or has been deleted")
 
         cursor.execute(
             """
             UPDATE organizations
             SET deleted = TRUE
             WHERE id = %s
-            """,
-            (org_id,),
+            """, (org_id,),
         )
         
         if not cursor.rowcount == 1:
@@ -185,13 +170,15 @@ def delete_org(org_id: int, current_user_email: str):
 
 def get_org(org_id: int) -> dict:
     with get_cursor() as cursor:
+        if not check_org_exists_and_not_deleted(org_id):
+            raise UserError("Organization does not exist or has been deleted")
+        
         cursor.execute(
             """
             SELECT name
             FROM organizations
             WHERE id = %s AND deleted = FALSE
-            """,
-            (org_id,),
+            """, (org_id,),
         )
 
         result = cursor.fetchone()

@@ -7,11 +7,8 @@ router = APIRouter(prefix="/team")
 
 @router.get("/{team_id}", response_model=dict)
 def get_team(team_id: int):
-    try:
-        return team.get_team(team_id)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error getting team: {str(e)}""")
+    team_data = team.get_team(team_id)
+    return {'Status': 'SUCCESS', 'Data': team_data}
 
 
 class TeamCreateRequest(BaseModel):
@@ -22,13 +19,9 @@ class TeamCreateRequest(BaseModel):
 
 @router.post("", response_model=dict)
 def create_team(request: TeamCreateRequest):
-    try:
-        team_id = create_team(
-            request.team_name, request.creator_email, request.org_id)
-        return {'status': 'SUCCESS', "team_id": team_id}
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error registering team: {str(e)}""")
+    team_id = team.create_team(
+        request.team_name, request.creator_email, request.org_id)
+    return {'Status': 'SUCCESS', "team_id": team_id}
 
 
 class TeamEditRequest(BaseModel):
@@ -38,13 +31,9 @@ class TeamEditRequest(BaseModel):
 
 @router.put("/{team_id}", response_model=dict)
 def edit_team(team_id: int, request: TeamEditRequest):
-    try:
-        res = team.edit_team(
-            team_id, request.current_user_email, request.team_name)
-        return {'status': 'SUCCESS' if res else 'FAILED'}
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error modifying team: {str(e)}""")
+    team.edit_team(
+        team_id, request.current_user_email, request.team_name)
+    return {'Status': 'SUCCESS'}
 
 
 class TeamDeleteRequest(BaseModel):
@@ -53,12 +42,9 @@ class TeamDeleteRequest(BaseModel):
 
 @router.delete("/{team_id}", response_model=dict)
 def delete_team(team_id: int, request: TeamDeleteRequest):
-    try:
-        res = team.delete_team(request.current_user_email, team_id)
-        return {'status': 'SUCCESS' if res else 'FAILED'}
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error deleting team: {str(e)}""")
+    team.delete_team(request.current_user_email, team_id)
+    return {'Status': 'SUCCESS'}
+
 
 
 class TeamJoinRequest(BaseModel):
@@ -68,9 +54,5 @@ class TeamJoinRequest(BaseModel):
 
 @router.post("/join", response_model=dict)
 def join_team(request: TeamJoinRequest):
-    try:
-        res = team.join_team(request.team_id, request.user_email)
-        return {'status': 'SUCCESS' if res else 'FAILED'}
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"""Error joining team: {str(e)}""")
+    team.join_team(request.team_id, request.user_email)
+    return {'Status': 'SUCCESS'}

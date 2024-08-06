@@ -1,26 +1,20 @@
-from core.chat.shared import check_in_chat, join_chat
+from core.chat.shared import check_chat_edit_perm, check_chat_exists_and_not_deleted, check_chat_view_perm, check_in_chat, join_chat
 from core.organization import check_assist_admin_perm
+from core.team import check_team_perm
+from utils.error import UserError, ServerError
 from utils.connect import get_cursor
 
 
-def check_stream_perm(current_user_email: str, stream_id: int) -> bool:
+
+
+def get_stream(current_user_email: str, stream_id: int) -> dict:
     with get_cursor() as cursor:
-        cursor.execute(
-            """
-                SELECT o.org_id
-                FROM chats c
-                JOIN teams t ON c.team_id = t.id
-                JOIN organizations o ON t.organization_id = o.org_id
-                WHERE c.id = %s
-                """, (stream_id,))
-
-        org_id = cursor.fetchone()[0]
-
-        return not (check_in_chat(current_user_email, stream_id) or check_assist_admin_perm(current_user_email, org_id))
-
-
-def get_stream(stream_id: int) -> dict:
-    with get_cursor() as cursor:
+        if not check_chat_exists_and_not_deleted(stream_id):
+            raise UserError("Stream does not exist or has been deleted")
+        
+        if not check_chat_view_perm(current_user_email, stream_id):
+            raise UserError("User does not have permission to view this stream")
+        
         cursor.execute(
             """
             SELECT c.name AS stream_name, cu.user_email
@@ -38,6 +32,9 @@ def get_stream(stream_id: int) -> dict:
 def create_stream(stream_name: str, creator_email: str, team_id: int) -> int:
     with get_cursor() as cursor:
         stream_id = None
+        
+        if not check_team_perm(creator_email, team_id):
+            raise UserError("User does not have permission to create streams in this team")
 
         cursor.execute(
             """
@@ -49,15 +46,17 @@ def create_stream(stream_name: str, creator_email: str, team_id: int) -> int:
             cursor.execute("SELECT LAST_INSERT_ID()")
             stream_id = cursor.fetchone()[0]
             join_chat(stream_id, creator_email)
+        else:
+            raise ServerError("Failed to create stream")
 
         return stream_id
 
 
-def edit_stream(current_user_email: str, stream_id: int, stream_name: str, public: bool) -> bool:
+def edit_stream(current_user_email: str, stream_id: int, stream_name: str, public: bool):
     with get_cursor() as cursor:
 
-        if not check_stream_perm(current_user_email, stream_id):
-            raise Exception(
+        if not check_chat_edit_perm(current_user_email, stream_id):
+            raise UserError(
                 "User does not have permission to perform this action")
 
         cursor.execute(
@@ -67,31 +66,37 @@ def edit_stream(current_user_email: str, stream_id: int, stream_name: str, publi
             WHERE id = %s AND chat_type = 'STREAM' AND deleted = FALSE
             """, (stream_name, public, stream_id))
 
-        return cursor.rowcount == 1
+        if not cursor.rowcount == 1:
+            raise ServerError("Failed to update stream")
 
 
-def leave_stream(stream_id: int, current_user_email: str, user_email: str) -> bool:
+def leave_stream(stream_id: int, current_user_email: str, user_email: str):
     with get_cursor() as cursor:
-
-        if not check_stream_perm(current_user_email, stream_id):
-            raise Exception(
-                "User does not have permission to perform this action")
-
+        
+        if not check_chat_exists_and_not_deleted(stream_id):
+            raise UserError("Stream does not exist or has been deleted")
+        
+        if not check_in_chat(user_email, stream_id):
+            raise UserError("User is not in the stream")
+            
+        if not (check_assist_admin_perm(current_user_email, stream_id) or current_user_email == user_email):
+            raise UserError("User does not have permission to perform this action")
+        
         cursor.execute(
             """
             DELETE FROM chat_users
             WHERE chat_id = %s AND user_email = %s
             """, (stream_id, user_email))
 
-        return cursor.rowcount == 1
+        if not cursor.rowcount == 1:
+            raise ServerError("Failed to leave stream")
 
 
-def delete_stream(current_user_email: str, stream_id: int) -> bool:
+def delete_stream(current_user_email: str, stream_id: int):
     with get_cursor() as cursor:
 
-        if not check_stream_perm(current_user_email, stream_id):
-            raise Exception(
-                "User does not have permission to perform this action")
+        if not check_chat_edit_perm(current_user_email, stream_id):
+            raise UserError("User does not have permission to perform this action")
 
         cursor.execute(
             """
@@ -100,4 +105,5 @@ def delete_stream(current_user_email: str, stream_id: int) -> bool:
             WHERE id = %s
             """, (stream_id,))
 
-        return cursor.rowcount == 1
+        if not cursor.rowcount == 1:
+            raise ServerError("Failed to delete stream")

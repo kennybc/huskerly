@@ -7,6 +7,6 @@ def get_secrets():
         service_name="secretsmanager", region_name="us-east-2")
 
     get_secret_value_response = client.get_secret_value(
-        SecretId="huskerly-secrets-user"
+        SecretId="huskerly-secrets-message"
     )
     return json.loads(get_secret_value_response["SecretString"])
