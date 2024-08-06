@@ -26,11 +26,14 @@ def check_org_exists_and_not_deleted(org_id: int) -> bool:
 def get_perm_level(user_email: str, org_id: Optional[int] = None) -> str:
     if org_id is None:
         print("getting user perms without org_id: ", user_email)
-        perm_level = requests.get(user_perm_endpoint + f"{user_email}")
+        response = requests.get(user_perm_endpoint + f"{user_email}")
     else:
         print("getting user perms with org_id: ", user_email, org_id)
-        perm_level = requests.get(
+        response = requests.get(
             user_perm_endpoint + f"{user_email}/{org_id}")
+    if not response or response.status_code != 200:
+        raise ServerError("Failed to get user permissions")
+    perm_level = response['Permission']
     print("perm_level (type):", type(perm_level.json()))
     print("perm_level (value):", perm_level.json())
     return perm_level.json()
