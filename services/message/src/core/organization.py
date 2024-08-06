@@ -28,19 +28,18 @@ def get_perm_level(user_email: str, org_id: Optional[int] = None) -> str:
         print("getting user perms without org_id: ", user_email)
         endpoint = user_perm_endpoint + f"{user_email}"
         print("endpoint:", endpoint)
-        response = requests.get(endpoint).json()
+        response = requests.get(endpoint)
     else:
         print("getting user perms with org_id: ", user_email, org_id)
         endpoint = user_perm_endpoint + f"{user_email}/{org_id}"
         print("endpoint:", endpoint)
-        response = requests.get(endpoint).json()
-    print("response:", response)
+        response = requests.get(endpoint)
+    print("response:", response.json())
     if not response or response.status_code != 200:
         raise ServerError("Failed to get user permissions")
-    perm_level = response['Permission']
-    print("perm_level (type):", type(perm_level.json()))
-    print("perm_level (value):", perm_level.json())
-    return perm_level.json()
+    perm_level = response.json()['Permission']
+    print("perm_level:", perm_level)
+    return perm_level
 
 
 def check_org_perm_in(
