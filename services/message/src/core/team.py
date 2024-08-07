@@ -59,11 +59,13 @@ def get_team(team_id: int) -> dict:
         
         team_info = {}
         for row in cursor.fetchall():
+            print(row)
             team_name = row['team_name']
             user_email = row['user_email']
             if team_name not in team_info:
                 team_info[team_name] = []
             team_info[team_name].append(user_email)
+        print("Team info:", team_info)
         
         return team_info
 
