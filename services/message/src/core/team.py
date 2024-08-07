@@ -10,7 +10,7 @@ def check_in_team(user_email: str, team_id: int) -> bool:
             """
             SELECT user_email
             FROM team_users
-            WHERE user_email = %s AND team_id = %s
+            WHERE user_email = %s AND team_id = %s AND deleted = FALSE
             """, (user_email, team_id))
 
         return cursor.fetchone() is not None
@@ -22,10 +22,14 @@ def check_team_perm(current_user_email: str, team_id: int) -> bool:
             """
                 SELECT t.org_id
                 FROM teams t
-                WHERE t.id = %s
+                WHERE t.id = %s AND t.deleted = FALSE
                 """, (team_id,))
+        
+        row = cursor.fetchone() 
+        if not row:
+            return False
 
-        org_id = cursor.fetchone()[0]
+        org_id = row[0]
 
         return (check_in_team(current_user_email, team_id) or check_assist_admin_perm(current_user_email, org_id))
     
