@@ -102,9 +102,9 @@ def create_team(team_name: str, creator_email: str, org_id: int) -> int:
     return team_id
 
 
-def join_team(team_id: int, user_email: str):
+def join_team(team_id: int, team_user_email: str):
     with get_cursor() as cursor:
-        print("Joining team:", team_id, user_email)
+        print("Joining team:", team_id, team_user_email)
 
         # Check if the team exists and is not deleted
         if not check_team_exists_and_not_deleted(team_id):
@@ -125,19 +125,19 @@ def join_team(team_id: int, user_email: str):
         org_id = result[1]
 
         # Check if the user is in the organization
-        if not check_in_org(user_email, org_id):
+        if not check_in_org(team_user_email, org_id):
             raise Exception("User is not in this organization")
 
         cursor.execute(
             """
             INSERT INTO team_users (team_id, user_email)
             VALUES (%s, %s)
-            """, (team_id, user_email))
+            """, (team_id, team_user_email))
 
         if not cursor.rowcount == 1:
             raise ServerError("Failed to join team")
 
-def leave_team(team_id: int, current_user_email: str, user_email: str):
+def leave_team(team_id: int, current_user_email: str, team_user_email: str):
     with get_cursor() as cursor:
         if not check_team_exists_and_not_deleted(team_id):
             raise UserError("Team does not exist or has been deleted")
@@ -150,7 +150,7 @@ def leave_team(team_id: int, current_user_email: str, user_email: str):
             """
             DELETE FROM team_users
             WHERE team_id = %s AND user_email = %s
-            """, (team_id, user_email))
+            """, (team_id, team_user_email))
 
         if not cursor.rowcount == 1:
             raise ServerError("Failed to leave team")
