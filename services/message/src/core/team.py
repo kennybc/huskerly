@@ -96,9 +96,9 @@ def create_team(team_name: str, creator_email: str, org_id: int) -> int:
             
         else:
             raise ServerError("Failed to create team")
-        
-    join_team(team_id, creator_email)
-    print("Team joined")
+    if team_id:
+        join_team(team_id, creator_email)
+        print("Team joined")
     return team_id
 
 

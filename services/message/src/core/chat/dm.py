@@ -53,6 +53,7 @@ def create_dm(creator_email: str, other_user_email: str, org_id: int) -> int:
         else:
             raise ServerError("Failed to create direct message")
         
-    join_chat(dm_id, creator_email, True)
-    join_chat(dm_id, other_user_email, True)
+    if dm_id:
+        join_chat(dm_id, creator_email, True)
+        join_chat(dm_id, other_user_email, True)
     return dm_id

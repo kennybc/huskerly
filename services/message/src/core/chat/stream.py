@@ -48,8 +48,9 @@ def create_stream(stream_name: str, public: bool, creator_email: str, team_id: i
             print("created stream: ", stream_id)
         else:
             raise ServerError("Failed to create stream")
-
-    join_chat(stream_id, creator_email, True)
+        
+    if stream_id:
+        join_chat(stream_id, creator_email, True)
     return stream_id
 
 
