@@ -32,7 +32,7 @@ class StreamDeleteRequest(BaseModel):
     current_user_email: str
 
 
-@router.post("/{stream_id}/delete", response_model=dict, tags=['Public'])
+@router.delete("/{stream_id}/delete", response_model=dict, tags=['Public'])
 def delete_stream(stream_id: int, request: StreamDeleteRequest):
     stream.delete_stream(request.current_user_email, stream_id)
     return {'Status': 'SUCCESS'}
