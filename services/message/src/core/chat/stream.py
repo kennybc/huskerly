@@ -1,4 +1,4 @@
-from core.chat.shared import check_chat_exists_and_not_deleted, check_in_chat, delete_chat, get_posts, join_chat
+from core.chat.shared import check_chat_exists_and_not_deleted, check_in_chat, get_posts, join_chat
 from core.organization import check_assist_admin_perm
 from core.team import check_team_perm
 from utils.error import UserError, ServerError

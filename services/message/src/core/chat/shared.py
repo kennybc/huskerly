@@ -1,4 +1,3 @@
-from core.organization import check_assist_admin_perm
 from utils.error import UserError, ServerError
 from utils.connect import get_cursor
     
