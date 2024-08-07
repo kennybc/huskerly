@@ -264,5 +264,5 @@ def get_org(org_id: int) -> dict:
             raise ServerError("Failed to get organization users")
         users = response.json()["Users"]
 
-        org_info = {"Name": result[0], "Users": users}
+        org_info = {"Name": result[0], "Users": users, "User Count": len(users)}
         return org_info
