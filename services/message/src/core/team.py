@@ -65,7 +65,7 @@ def get_team(team_id: int) -> dict:
 def create_team(team_name: str, creator_email: str, org_id: int) -> int:
     with get_cursor() as cursor:
         team_id = None
-
+        print("Creating team:", team_name, creator_email, org_id)
         cursor.execute(
             """
             INSERT INTO teams (name, created_by_email, org_id)
@@ -75,7 +75,9 @@ def create_team(team_name: str, creator_email: str, org_id: int) -> int:
         if cursor.rowcount == 1:
             cursor.execute("SELECT LAST_INSERT_ID()")
             team_id = cursor.fetchone()[0]
+            print("Team ID:", team_id)
             join_team(team_id, creator_email)
+            print("Team joined")
         else:
             raise ServerError("Failed to create team")
 
@@ -84,6 +86,7 @@ def create_team(team_name: str, creator_email: str, org_id: int) -> int:
 
 def join_team(team_id: int, user_email: str):
     with get_cursor() as cursor:
+        print("Joining team:", team_id, user_email)
 
         # Check if the team exists and is not deleted
         if not check_team_exists_and_not_deleted(team_id):
@@ -97,6 +100,7 @@ def join_team(team_id: int, user_email: str):
             """, (team_id,))
 
         result = cursor.fetchone()
+        print("selected team:", result)
         if result is None or result[0]:
             raise UserError("Team does not exist or has been deleted")
 
