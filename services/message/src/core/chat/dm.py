@@ -10,7 +10,7 @@ def get_dm(current_user_email: str, dm_id: int) -> dict:
             raise UserError("Stream does not exist or has been deleted")
         
         if not check_chat_view_perm(current_user_email, dm_id):
-            raise UserError("User does not have permission to view this stream")
+            raise UserError("User does not have permission to view this dm")
         
         cursor.execute(
             """
@@ -27,8 +27,8 @@ def get_dm(current_user_email: str, dm_id: int) -> dict:
 
 
 def create_dm(creator_email: str, other_user_email: str, org_id: int) -> int:
+    dm_id = None
     with get_cursor() as cursor:
-        dm_id = None
         
         if not check_org_exists_and_not_deleted(org_id):
             raise UserError("Organization does not exist or has been deleted")
@@ -37,19 +37,23 @@ def create_dm(creator_email: str, other_user_email: str, org_id: int) -> int:
             raise UserError("One or both users not in given organization")
 
         dm_name = f"{creator_email} and {other_user_email}"
+        
+        public = False
 
         cursor.execute(
             """
-            INSERT INTO chats (name, created_by_email, org_id, chat_type)
-            VALUES (%s, %s, %s, 'DIRECT_MESSAGE')
-            """, (dm_name, creator_email, org_id))
+            INSERT INTO chats (name, created_by_email, org_id, public, chat_type)
+            VALUES (%s, %s, %s, %s, 'DIRECT_MESSAGE')
+            """, (dm_name, creator_email, org_id, public))
 
         if cursor.rowcount == 1:
             cursor.execute("SELECT LAST_INSERT_ID()")
             dm_id = cursor.fetchone()[0]
-            join_chat(dm_id, creator_email)
-            join_chat(dm_id, other_user_email)
+            print("created dm: ", dm_id) 
         else:
             raise ServerError("Failed to create direct message")
-
-        return dm_id
+        
+    if dm_id:
+        join_chat(dm_id, creator_email, True)
+        join_chat(dm_id, other_user_email, True)
+    return dm_id

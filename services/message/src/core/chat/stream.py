@@ -20,7 +20,7 @@ def get_stream(current_user_email: str, stream_id: int) -> dict:
             SELECT c.name AS stream_name, cu.user_email
             FROM chats c
             JOIN chat_users cu ON c.id = cu.chat_id
-            WHERE c.chat_type == 'STREAM' AND c.id = %s AND c.deleted = FALSE
+            WHERE c.chat_type = 'STREAM' AND c.id = %s AND c.deleted = FALSE
             """, (stream_id,))
 
         result = cursor.fetchall()
@@ -29,27 +29,31 @@ def get_stream(current_user_email: str, stream_id: int) -> dict:
         return stream_info
 
 
-def create_stream(stream_name: str, creator_email: str, team_id: int) -> int:
+def create_stream(stream_name: str, public: bool, creator_email: str, team_id: int) -> int:
+    stream_id = None
     with get_cursor() as cursor:
-        stream_id = None
-        
+        print("creating stream: ", stream_name, public, creator_email, team_id)
         if not check_team_perm(creator_email, team_id):
             raise UserError("User does not have permission to create streams in this team")
-
+        
+        print(type(public))
+        
         cursor.execute(
             """
-            INSERT INTO chats (name, created_by_email, team_id, chat_type)
-            VALUES (%s, %s, %s, 'STREAM')
-            """, (stream_name, creator_email, team_id))
+            INSERT INTO chats (name, created_by_email, team_id, public, chat_type)
+            VALUES (%s, %s, %s, %s, 'STREAM')
+            """, (stream_name, creator_email, team_id, public))
 
         if cursor.rowcount == 1:
             cursor.execute("SELECT LAST_INSERT_ID()")
             stream_id = cursor.fetchone()[0]
-            join_chat(stream_id, creator_email)
+            print("created stream: ", stream_id)
         else:
             raise ServerError("Failed to create stream")
-
-        return stream_id
+        
+    if stream_id:
+        join_chat(stream_id, creator_email, True)
+    return stream_id
 
 
 def edit_stream(current_user_email: str, stream_id: int, stream_name: str, public: bool):
@@ -68,7 +72,30 @@ def edit_stream(current_user_email: str, stream_id: int, stream_name: str, publi
 
         if not cursor.rowcount == 1:
             raise ServerError("Failed to update stream")
-
+        
+def join_stream(stream_id: int, user_email: str):
+    team_id = None
+    with get_cursor() as cursor:
+        print("Joining stream: ", stream_id, user_email)
+        cursor.execute(
+            """
+            SELECT team_id
+            FROM chats
+            WHERE id = %s AND chat_type = 'STREAM' AND deleted = FALSE
+            """, (stream_id,))
+        
+        result = cursor.fetchone()
+        if result is None:
+            raise ServerError("Failed to join stream")
+        
+        team_id = result[0]
+        print("Team ID:", team_id)
+        
+        if not check_team_perm(user_email, team_id):
+            raise UserError("User must be in the team to join the stream")
+        
+    if team_id:
+        join_chat(stream_id, user_email)
 
 def leave_stream(stream_id: int, current_user_email: str, user_email: str):
     with get_cursor() as cursor:
