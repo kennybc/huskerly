@@ -1,13 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from api import org_routes, team_routes, post_routes, stream_routes, message_routes
+from api import org_routes, team_routes, post_routes, stream_routes, message_routes, dm_routes
 from utils.connect import initialize_db_connection
 from utils.error import ServerError, UserError
 
 app = FastAPI(root_path="/message", debug=True)
 app.include_router(message_routes.router)
 app.include_router(stream_routes.router)
+app.include_router(dm_routes.router)
 app.include_router(post_routes.router)
 app.include_router(org_routes.router)
 app.include_router(team_routes.router)
