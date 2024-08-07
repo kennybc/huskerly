@@ -34,6 +34,9 @@ def check_team_perm(current_user_email: str, team_id: int) -> bool:
 
         org_id = row[0]
         print("org_id:", org_id)
+        
+        print("check_in_team:", check_in_team(current_user_email, team_id))
+        print("check_assist_admin_perm:", check_assist_admin_perm(current_user_email, org_id))
 
         return (check_in_team(current_user_email, team_id) or check_assist_admin_perm(current_user_email, org_id))
     
