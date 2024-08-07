@@ -67,7 +67,7 @@ class StreamLeaveRequest(BaseModel):
     user_email: str
 
 
-@router.delete("/{stream_id}", response_model=dict, tags=['Public'])
+@router.post("/{stream_id}", response_model=dict, tags=['Public'])
 def leave_stream(stream_id: int, request: StreamLeaveRequest):
     stream.leave_stream(stream_id, request.current_user_email, request.user_email)
     return {'Status': 'SUCCESS'}
