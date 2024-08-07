@@ -27,6 +27,16 @@ def join_stream(stream_id: int, request: JoinStreamRequest):
     chat.join_chat(stream_id, request.user_email)
     return {'Status': 'SUCCESS'}
 
+class StreamLeaveRequest(BaseModel):
+    current_user_email: str
+    user_email: str
+
+
+@router.post("/{stream_id}/leave", response_model=dict, tags=['Public'])
+def leave_stream(stream_id: int, request: StreamLeaveRequest):
+    stream.leave_stream(stream_id, request.current_user_email, request.user_email)
+    return {'Status': 'SUCCESS'}
+
 
 class StreamDeleteRequest(BaseModel):
     current_user_email: str
@@ -62,12 +72,4 @@ def edit_stream(stream_id: int, request: StreamEditRequest):
     return {'Status': 'SUCCESS'}
 
 
-class StreamLeaveRequest(BaseModel):
-    current_user_email: str
-    user_email: str
 
-
-@router.post("/{stream_id}", response_model=dict, tags=['Public'])
-def leave_stream(stream_id: int, request: StreamLeaveRequest):
-    stream.leave_stream(stream_id, request.current_user_email, request.user_email)
-    return {'Status': 'SUCCESS'}
