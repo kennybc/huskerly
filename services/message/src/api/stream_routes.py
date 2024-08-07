@@ -39,6 +39,7 @@ def delete_stream(stream_id: int, request: StreamDeleteRequest):
 
 class StreamCreateRequest(BaseModel):
     stream_name: str
+    public: bool
     creator_email: str
     team_id: int
 

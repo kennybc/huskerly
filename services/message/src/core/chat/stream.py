@@ -29,27 +29,28 @@ def get_stream(current_user_email: str, stream_id: int) -> dict:
         return stream_info
 
 
-def create_stream(stream_name: str, creator_email: str, team_id: int) -> int:
+def create_stream(stream_name: str, public: bool, creator_email: str, team_id: int) -> int:
+    stream_id = None
     with get_cursor() as cursor:
-        stream_id = None
         
         if not check_team_perm(creator_email, team_id):
             raise UserError("User does not have permission to create streams in this team")
 
         cursor.execute(
             """
-            INSERT INTO chats (name, created_by_email, team_id, chat_type)
-            VALUES (%s, %s, %s, 'STREAM')
-            """, (stream_name, creator_email, team_id))
+            INSERT INTO chats (name, created_by_email, team_id, public, chat_type)
+            VALUES (%s, %s, %s, %s, 'STREAM')
+            """, (stream_name, creator_email, team_id, public))
 
         if cursor.rowcount == 1:
             cursor.execute("SELECT LAST_INSERT_ID()")
             stream_id = cursor.fetchone()[0]
-            join_chat(stream_id, creator_email)
+            print("created stream: ", stream_id)
         else:
             raise ServerError("Failed to create stream")
 
-        return stream_id
+    join_chat(stream_id, creator_email, True)
+    return stream_id
 
 
 def edit_stream(current_user_email: str, stream_id: int, stream_name: str, public: bool):

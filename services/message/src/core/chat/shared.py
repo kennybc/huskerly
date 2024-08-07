@@ -81,12 +81,12 @@ def get_posts(current_user_email: str, chat_id: int) -> dict:
         return post_history
 
 
-def join_chat(chat_id: int, user_email: str):
+def join_chat(chat_id: int, user_email: str, override_visibility_perm: bool = False):
     with get_cursor() as cursor:
         if not check_chat_exists_and_not_deleted(chat_id):
             raise UserError("Chat does not exist or has been deleted")
         
-        if not check_chat_view_perm(user_email, chat_id):
+        if not override_visibility_perm and not check_chat_view_perm(user_email, chat_id):
             raise UserError("User does not have permission to view this chat")
         
         if check_in_chat(user_email, chat_id):
