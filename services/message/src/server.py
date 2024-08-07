@@ -27,6 +27,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.exception_handler(UserError)
 async def user_error_handler(request, exc: UserError):
     return JSONResponse(
@@ -41,6 +42,7 @@ async def server_error_handler(request, exc: ServerError):
         status_code=500,
         content={"status": "FAILED", "detail": exc.message},
     )
+
 
 @app.get("/")
 def get_root():
