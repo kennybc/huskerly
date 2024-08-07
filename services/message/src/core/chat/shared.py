@@ -6,10 +6,9 @@ def check_chat_view_perm(current_user_email: str, chat_id: int) -> bool:
     with get_cursor() as cursor:
         cursor.execute(
             """
-                SELECT o.org_id, c.public
+                SELECT t.org_id, c.public
                 FROM chats c
                 JOIN teams t ON c.team_id = t.id
-                JOIN organizations o ON t.organization_id = o.org_id
                 WHERE c.id = %s
                 """, (chat_id,))
 
