@@ -128,10 +128,13 @@ def get_user_permission_level(user_email: str, org_id: Optional[int] = None):
     print(
         "WARNING: auth token not supplied, accessing user through admin API (needs to be fixed)"
     )
-    response = client.admin_get_user(UserPoolId=pool_id, Username=user_email)
+    try:
+        response = client.admin_get_user(UserPoolId=pool_id, Username=user_email)
 
-    if response.get('ResponseMetadata', {}).get('HTTPStatusCode') != 200:
-        raise ServerError(f"Failed to verify user {user_email} in Cognito.")
+        if response.get('ResponseMetadata', {}).get('HTTPStatusCode') != 200:
+            raise ServerError(f"""Failed to get user {user_email}.""")
+    except client.exceptions.UserNotFoundException:
+        raise UserError(f"""User {user_email} does not exist.""")
 
     user_attributes = get_user_attributes(response)
 
