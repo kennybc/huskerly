@@ -114,7 +114,7 @@ def join_team(team_id: int, user_email: str):
 
         cursor.execute(
             """
-            INSERT INTO team_members (team_id, user_email)
+            INSERT INTO team_users (team_id, user_email)
             VALUES (%s, %s)
             """, (team_id, user_email))
 
