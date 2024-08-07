@@ -48,7 +48,7 @@ def get_cursor():
     conn = connect_to_invites_database()
     cursor = conn.cursor()
     try:
-        yield (conn, cursor)
+        yield cursor
         conn.commit()
     except (ClientError, NoCredentialsError, UserError, EndpointConnectionError) as e:
         conn.rollback()
