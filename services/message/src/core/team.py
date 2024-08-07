@@ -121,9 +121,6 @@ def join_team(team_id: int, user_email: str):
         if not cursor.rowcount == 1:
             raise ServerError("Failed to join team")
 
-def join_team_helper(team_id: int, user_email: str):
-
-
 def leave_team(team_id: int, current_user_email: str, user_email: str):
     with get_cursor() as cursor:
         if not check_team_exists_and_not_deleted(team_id):
