@@ -14,11 +14,12 @@ def check_chat_view_perm(current_user_email: str, chat_id: int) -> bool:
                 """, (chat_id,))
         
         result = cursor.fetchone()
+        print("result:", result)
         if not result:
             return False
 
         org_id, public = result
-
+        print("checking chat view perm:", public, check_in_chat(current_user_email, chat_id), check_assist_admin_perm(current_user_email, org_id))
         return public or check_in_chat(current_user_email, chat_id) or check_assist_admin_perm(current_user_email, org_id)
 
 def check_chat_edit_perm(current_user_email: str, chat_id: int) -> bool:

@@ -10,7 +10,7 @@ def get_dm(current_user_email: str, dm_id: int) -> dict:
             raise UserError("Stream does not exist or has been deleted")
         
         if not check_chat_view_perm(current_user_email, dm_id):
-            raise UserError("User does not have permission to view this stream")
+            raise UserError("User does not have permission to view this dm")
         
         cursor.execute(
             """
