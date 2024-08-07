@@ -72,7 +72,28 @@ def edit_stream(current_user_email: str, stream_id: int, stream_name: str, publi
 
         if not cursor.rowcount == 1:
             raise ServerError("Failed to update stream")
-
+        
+def join_stream(stream_id: int, user_email: str):
+    team_id = None
+    with get_cursor() as cursor:
+        
+        cursor.execute(
+            """
+            SELECT team_id
+            FROM chats
+            WHERE id = %s AND chat_type = 'STREAM' AND deleted = FALSE
+            """, (stream_id,))
+        
+        if not cursor.rowcount == 1:
+            raise ServerError("Failed to join stream")
+        
+        team_id = cursor.fetchone()[0]
+        
+        if not check_team_perm(user_email, team_id):
+            raise UserError("User must be in the team to join the stream")
+        
+    if team_id:
+        join_chat(stream_id, user_email)
 
 def leave_stream(stream_id: int, current_user_email: str, user_email: str):
     with get_cursor() as cursor:

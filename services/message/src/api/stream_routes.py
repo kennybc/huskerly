@@ -24,7 +24,7 @@ class JoinStreamRequest(BaseModel):
 
 @router.post("/{stream_id}/join", response_model=dict, tags=['Public'])
 def join_stream(stream_id: int, request: JoinStreamRequest):
-    chat.join_chat(stream_id, request.user_email)
+    stream.join_stream(stream_id, request.user_email)
     return {'Status': 'SUCCESS'}
 
 class StreamLeaveRequest(BaseModel):
