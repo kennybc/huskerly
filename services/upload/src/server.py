@@ -1,12 +1,13 @@
-import os
 import boto3
 import uuid
-from fastapi import File, UploadFile, FastAPI
+from fastapi import FastAPI, HTTPException, File, UploadFile
+from botocore.exceptions import ClientError
 from typing import List
 
 
 app = FastAPI(root_path="/upload")
 bucket = boto3.resource("s3").Bucket("huskerly-attachments")
+cdn = "https://d2o5rbazf3fhtp.cloudfront.net/"
 
 
 @app.get("/")
@@ -16,7 +17,7 @@ def get_root():
 
 @app.post("/")
 def post_attachment(files: List[UploadFile] = File(...)):
-    keys = []
+    distributions = []
     for file in files:
         key = str(uuid.uuid4().hex)
         try:
@@ -28,9 +29,9 @@ def post_attachment(files: List[UploadFile] = File(...)):
                 Body=content,
                 ContentType=file.headers["content-type"],
             )
-            keys.append(key)
+            distributions.append(cdn + key)
         except Exception as e:
             print(f"Failed to upload file ({file.filename}): {e}")
             return {"Status": "FAILED", "Error": e}
 
-    return {"Status": "SUCCESS", "Keys": keys}
+    return {"Status": "SUCCESS", "Distributions": distributions}
