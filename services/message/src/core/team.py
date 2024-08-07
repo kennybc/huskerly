@@ -68,7 +68,7 @@ def create_team(team_name: str, creator_email: str, org_id: int) -> int:
 
         cursor.execute(
             """
-            INSERT INTO teams (name, created_by_email, organization_id)
+            INSERT INTO teams (name, created_by_email, org_id)
             VALUES (%s, %s, %s)
             """, (team_name, creator_email, org_id))
 
