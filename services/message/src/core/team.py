@@ -48,23 +48,32 @@ def get_team(team_id: int) -> dict:
         if not check_team_exists_and_not_deleted(team_id):
             raise UserError("Team does not exist or has been deleted")
         
+        team_info = {}
+        
+        cursor.execute(
+            """
+            SELECT name
+            FROM teams
+            WHERE id = %s AND deleted = FALSE
+            """, (team_id,))
+        
+        team_name = cursor.fetchone()[0]
+        team_info["team_name"] = team_name
+        team_info["users"] = []
+        
         cursor.execute(
             """
             SELECT t.name AS team_name, tu.user_email
             FROM teams t
             JOIN team_users tu ON t.id = tu.team_id
             WHERE t.id = %s AND t.deleted = FALSE
-            """, (team_id,)
-        )
+            """, (team_id,))
         
-        team_info = {}
+        
         for row in cursor.fetchall():
             print(row)
-            team_name = row['team_name']
-            user_email = row['user_email']
-            if team_name not in team_info:
-                team_info[team_name] = []
-            team_info[team_name].append(user_email)
+            team_name, user_email = row
+            team_info["users"].append(user_email)
         print("Team info:", team_info)
         
         return team_info
