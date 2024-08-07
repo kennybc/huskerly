@@ -60,7 +60,7 @@ def get_dm(current_user_email: str, dm_id: int) -> dict:
             SELECT c.name AS dm_name, cu.user_email
             FROM chats c
             JOIN chat_users cu ON c.id = cu.chat_id
-            WHERE c.chat_type == 'DIRECT_MESSAGE' AND c.id = %s AND c.deleted = FALSE
+            WHERE c.chat_type = 'DIRECT_MESSAGE' AND c.id = %s AND c.deleted = FALSE
             """, (dm_id,))
 
         result = cursor.fetchall()
