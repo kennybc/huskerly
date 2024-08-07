@@ -20,14 +20,13 @@ def check_chat_edit_perm(current_user_email: str, chat_id: int) -> bool:
     with get_cursor() as cursor:
         cursor.execute(
             """
-                SELECT o.org_id, c.public
+                SELECT t.org_id, c.public
                 FROM chats c
                 JOIN teams t ON c.team_id = t.id
-                JOIN organizations o ON t.organization_id = o.org_id
                 WHERE c.id = %s
                 """, (chat_id,))
 
-        org_id = cursor.fetchone()[0]
+        org_id, public = cursor.fetchone()
 
         return check_in_chat(current_user_email, chat_id) or check_assist_admin_perm(current_user_email, org_id)
     
