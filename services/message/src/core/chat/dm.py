@@ -5,7 +5,7 @@ from core.chat.shared import check_chat_exists_and_not_deleted, check_chat_view_
 
 
 def get_dm(current_user_email: str, dm_id: int) -> dict:
-    with get_cursor() as cursor:
+    with get_cursor() as (_, cursor):
         if not check_chat_exists_and_not_deleted(dm_id):
             raise UserError("Stream does not exist or has been deleted")
         
@@ -27,7 +27,7 @@ def get_dm(current_user_email: str, dm_id: int) -> dict:
 
 
 def create_dm(creator_email: str, other_user_email: str, org_id: int) -> int:
-    with get_cursor() as cursor:
+    with get_cursor() as (_, cursor):
         dm_id = None
         
         if not check_org_exists_and_not_deleted(org_id):
