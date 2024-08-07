@@ -84,11 +84,11 @@ def join_stream(stream_id: int, user_email: str):
             WHERE id = %s AND chat_type = 'STREAM' AND deleted = FALSE
             """, (stream_id,))
         
-        if not cursor.rowcount == 1:
-            print(cursor.rowcount)
+        result = cursor.fetchone()
+        if result is None:
             raise ServerError("Failed to join stream")
         
-        team_id = cursor.fetchone()[0]
+        team_id = result[0]
         print("Team ID:", team_id)
         
         if not check_team_perm(user_email, team_id):
