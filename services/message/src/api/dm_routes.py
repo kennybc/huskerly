@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, HTTPException
 from pydantic import BaseModel
 from typing import List
-from core.chat import dm, shared as chat
+from core.chat import dm
 
 
 router = APIRouter(prefix="/dm")
@@ -11,7 +11,7 @@ class DmGetRequest(BaseModel):
 
 @router.get("/{dm_id}/messages", response_model=dict, tags=['Public'])
 def get_posts(dm_id: int, request: DmGetRequest):
-    posts = chat.get_posts(request.current_user_email, dm_id)
+    posts = dm.get_dm_posts(request.current_user_email, dm_id) 
     return {'Status': 'SUCCESS', 'Posts': posts}
 
     

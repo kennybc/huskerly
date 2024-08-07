@@ -1,4 +1,4 @@
-from core.chat.shared import check_chat_exists_and_not_deleted, check_in_chat, join_chat
+from core.chat.shared import check_chat_exists_and_not_deleted, check_in_chat, delete_chat, get_posts, join_chat
 from core.organization import check_assist_admin_perm
 from core.team import check_team_perm
 from utils.error import UserError, ServerError
@@ -64,6 +64,19 @@ def get_stream(current_user_email: str, stream_id: int) -> dict:
         stream_info = {"stream_name": result[0][0],
                        "users": [row[1] for row in result]}
         return stream_info
+    
+    
+def get_stream_posts(current_user_email: str, stream_id: int) -> dict:
+    if not check_stream_view_perm(current_user_email, stream_id):
+        raise UserError("User does not have permission to view this stream")
+    
+    return get_posts(stream_id)
+
+def join_stream(stream_id: int, user_email: str):
+    if not check_stream_view_perm(user_email, stream_id):
+        raise UserError("User does not have permission to join this stream")
+
+    return join_chat(stream_id, user_email)
 
 
 def create_stream(stream_name: str, public: bool, creator_email: str, team_id: int) -> int:
@@ -89,7 +102,7 @@ def create_stream(stream_name: str, public: bool, creator_email: str, team_id: i
             raise ServerError("Failed to create stream")
         
     if stream_id:
-        join_chat(stream_id, creator_email, True)
+        join_chat(stream_id, creator_email)
     return stream_id
 
 

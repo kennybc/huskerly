@@ -1,8 +1,6 @@
 from core.organization import check_assist_admin_perm
 from utils.error import UserError, ServerError
 from utils.connect import get_cursor
-
-
     
 def check_chat_exists_and_not_deleted(chat_id: int) -> bool:
     with get_cursor() as cursor:
@@ -28,13 +26,13 @@ def check_in_chat(user_email: str, chat_id: int) -> bool:
         return cursor.fetchone() is not None
 
 
-def get_posts(current_user_email: str, chat_id: int) -> dict:
+def get_posts(chat_id: int) -> dict:
     with get_cursor() as cursor:
         if not check_chat_exists_and_not_deleted(chat_id):
             raise UserError("Chat does not exist or has been deleted")
         
-        if not check_chat_view_perm(current_user_email, chat_id):
-            raise UserError("User does not have permission to view this chat")
+        # if not check_chat_view_perm(current_user_email, chat_id):
+        #     raise UserError("User does not have permission to view this chat")
         
         cursor.execute(
             """
@@ -53,13 +51,13 @@ def get_posts(current_user_email: str, chat_id: int) -> dict:
         return post_history
 
 
-def join_chat(chat_id: int, user_email: str, override_visibility_perm: bool = False):
+def join_chat(chat_id: int, user_email: str):
     with get_cursor() as cursor:
         if not check_chat_exists_and_not_deleted(chat_id):
             raise UserError("Chat does not exist or has been deleted")
         
-        if not override_visibility_perm and not check_chat_view_perm(user_email, chat_id):
-            raise UserError("User does not have permission to view this chat")
+        # if not override_visibility_perm and not check_chat_view_perm(user_email, chat_id):
+        #     raise UserError("User does not have permission to view this chat")
         
         if check_in_chat(user_email, chat_id):
             raise UserError("User is already in this chat")
@@ -73,21 +71,3 @@ def join_chat(chat_id: int, user_email: str, override_visibility_perm: bool = Fa
         if not cursor.rowcount == 1:
             raise ServerError("Failed to join chat")
 
-
-def delete_chat(current_user_email: str, chat_id: int) -> bool:
-    with get_cursor() as cursor:
-        if not check_chat_exists_and_not_deleted(chat_id):
-            raise UserError("Chat does not exist or is already deleted")
-        
-        if not check_chat_edit_perm(current_user_email, chat_id):
-            raise UserError("User does not have permission to delete this chat")
-        
-        cursor.execute(
-            """
-            UPDATE chats
-            SET deleted = TRUE
-            WHERE id = %s
-            """, (chat_id,))
-        
-        if not cursor.rowcount == 1:
-            raise ServerError("Failed to delete chat")

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from core.chat import stream, shared as chat
+from core.chat import stream
 
 
 router = APIRouter(prefix="/stream")
@@ -10,7 +10,7 @@ class StreamGetRequest(BaseModel):
 
 @router.get("/{stream_id}/messages", response_model=dict, tags=['Public'])
 def get_posts(stream_id: int, request: StreamGetRequest):
-    posts = chat.get_posts(request.current_user_email, stream_id)
+    posts = stream.get_stream_posts(request.current_user_email, stream_id) #TODO:
     return {'Status': 'SUCCESS', 'Posts': posts}
 
 @router.get("/{stream_id}", response_model=dict, tags=['Public'])
