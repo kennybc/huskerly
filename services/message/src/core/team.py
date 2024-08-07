@@ -27,7 +27,7 @@ def check_team_perm(current_user_email: str, team_id: int) -> bool:
 
         org_id = cursor.fetchone()[0]
 
-        return not (check_in_team(current_user_email, team_id) or check_assist_admin_perm(current_user_email, org_id))
+        return (check_in_team(current_user_email, team_id) or check_assist_admin_perm(current_user_email, org_id))
     
 def check_team_exists_and_not_deleted(team_id: int) -> bool:
     with get_cursor() as cursor:
