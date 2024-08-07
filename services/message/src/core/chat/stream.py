@@ -76,7 +76,7 @@ def edit_stream(current_user_email: str, stream_id: int, stream_name: str, publi
 def join_stream(stream_id: int, user_email: str):
     team_id = None
     with get_cursor() as cursor:
-        
+        print("Joining stream: ", stream_id, user_email)
         cursor.execute(
             """
             SELECT team_id
@@ -85,9 +85,11 @@ def join_stream(stream_id: int, user_email: str):
             """, (stream_id,))
         
         if not cursor.rowcount == 1:
+            print(cursor.rowcount)
             raise ServerError("Failed to join stream")
         
         team_id = cursor.fetchone()[0]
+        print("Team ID:", team_id)
         
         if not check_team_perm(user_email, team_id):
             raise UserError("User must be in the team to join the stream")
