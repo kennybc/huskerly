@@ -46,11 +46,7 @@ def create_stream(stream_name: str, public: bool, creator_email: str, team_id: i
 
         if cursor.rowcount == 1:
             cursor.execute("SELECT LAST_INSERT_ID()")
-            row = cursor.fetchone()
-            print(row)
-            if not row:
-                raise ServerError("Failed to create stream")
-            stream_id = row[0]
+            stream_id = cursor.fetchone()[0]
             print("created stream: ", stream_id)
         else:
             raise ServerError("Failed to create stream")

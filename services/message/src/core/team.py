@@ -18,25 +18,18 @@ def check_in_team(user_email: str, team_id: int) -> bool:
 
 def check_team_perm(current_user_email: str, team_id: int) -> bool:
     with get_cursor() as cursor:
-        print("here 1")
         cursor.execute(
             """
                 SELECT t.org_id
                 FROM teams t
                 WHERE t.id = %s AND t.deleted = FALSE
                 """, (team_id,))
-        print("here 2")
         
         row = cursor.fetchone() 
         if not row:
             return False
-        print("row:", row)
 
         org_id = row[0]
-        print("org_id:", org_id)
-        
-        print("check_in_team:", check_in_team(current_user_email, team_id))
-        print("check_assist_admin_perm:", check_assist_admin_perm(current_user_email, org_id))
 
         return (check_in_team(current_user_email, team_id) or check_assist_admin_perm(current_user_email, org_id))
     
