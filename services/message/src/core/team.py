@@ -20,9 +20,8 @@ def check_team_perm(current_user_email: str, team_id: int) -> bool:
     with get_cursor() as cursor:
         cursor.execute(
             """
-                SELECT o.org_id
+                SELECT t.org_id
                 FROM teams t
-                JOIN organizations o ON t.org_id = o.id
                 WHERE t.id = %s
                 """, (team_id,))
 
