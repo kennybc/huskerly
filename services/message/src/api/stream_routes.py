@@ -46,7 +46,7 @@ class StreamCreateRequest(BaseModel):
 
 @router.post("", response_model=dict, tags=['Public'])
 def create_stream(request: StreamCreateRequest):
-    stream_id = stream.create_stream(request.stream_name, request.creator_email, request.team_id)
+    stream_id = stream.create_stream(request.stream_name, request.public, request.creator_email, request.team_id)
     return {'Status': 'SUCCESS', "stream_id": stream_id}
 
 
