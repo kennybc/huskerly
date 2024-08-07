@@ -1,18 +1,55 @@
-from core.chat.shared import check_chat_edit_perm, check_chat_exists_and_not_deleted, check_chat_view_perm, check_in_chat, join_chat
+from core.chat.shared import check_chat_exists_and_not_deleted, check_in_chat, join_chat
 from core.organization import check_assist_admin_perm
 from core.team import check_team_perm
 from utils.error import UserError, ServerError
 from utils.connect import get_cursor
 
 
+def check_stream_view_perm(current_user_email: str, chat_id: int) -> bool:
+    with get_cursor() as cursor:
+        print("Checking stream view permission for user:", current_user_email, "and chat_id:", chat_id)
+        cursor.execute(
+            """
+                SELECT t.org_id, c.public
+                FROM chats c
+                JOIN teams t ON c.team_id = t.id
+                WHERE c.id = %s AND c.deleted = FALSE AND c.chat_type = 'STREAM'
+                """, (chat_id,))
+        
+        result = cursor.fetchone()
+        print("result:", result)
+        if not result:
+            return False
 
+        org_id, public = result
+        print("checking chat view perm:", public, check_in_chat(current_user_email, chat_id), check_assist_admin_perm(current_user_email, org_id))
+        return public or check_in_chat(current_user_email, chat_id) or check_assist_admin_perm(current_user_email, org_id)
+
+def check_stream_edit_perm(current_user_email: str, chat_id: int) -> bool:
+    with get_cursor() as cursor:
+        print("Checking stream edit permission for user:", current_user_email, "and chat_id:", chat_id)
+        cursor.execute(
+            """
+                SELECT t.org_id, c.public
+                FROM chats c
+                JOIN teams t ON c.team_id = t.id
+                WHERE c.id = %s AND c.deleted = FALSE AND c.chat_type = 'STREAM'
+                """, (chat_id,))
+        
+        result = cursor.fetchone()
+        if not result:
+            return False
+
+        org_id, public = result
+
+        return check_in_chat(current_user_email, chat_id) or check_assist_admin_perm(current_user_email, org_id)
 
 def get_stream(current_user_email: str, stream_id: int) -> dict:
     with get_cursor() as cursor:
         if not check_chat_exists_and_not_deleted(stream_id):
             raise UserError("Stream does not exist or has been deleted")
         
-        if not check_chat_view_perm(current_user_email, stream_id):
+        if not check_stream_view_perm(current_user_email, stream_id):
             raise UserError("User does not have permission to view this stream")
         
         cursor.execute(
@@ -59,7 +96,7 @@ def create_stream(stream_name: str, public: bool, creator_email: str, team_id: i
 def edit_stream(current_user_email: str, stream_id: int, stream_name: str, public: bool):
     with get_cursor() as cursor:
 
-        if not check_chat_edit_perm(current_user_email, stream_id):
+        if not check_stream_edit_perm(current_user_email, stream_id):
             raise UserError(
                 "User does not have permission to perform this action")
 
@@ -122,7 +159,7 @@ def leave_stream(stream_id: int, current_user_email: str, user_email: str):
 def delete_stream(current_user_email: str, stream_id: int):
     with get_cursor() as cursor:
 
-        if not check_chat_edit_perm(current_user_email, stream_id):
+        if not check_stream_edit_perm(current_user_email, stream_id):
             raise UserError("User does not have permission to perform this action")
 
         cursor.execute(

@@ -2,44 +2,7 @@ from core.organization import check_assist_admin_perm
 from utils.error import UserError, ServerError
 from utils.connect import get_cursor
 
-def check_chat_view_perm(current_user_email: str, chat_id: int) -> bool:
-    with get_cursor() as cursor:
-        print("Checking chat view permission for user:", current_user_email, "and chat_id:", chat_id)
-        cursor.execute(
-            """
-                SELECT t.org_id, c.public
-                FROM chats c
-                JOIN teams t ON c.team_id = t.id
-                WHERE c.id = %s
-                """, (chat_id,))
-        
-        result = cursor.fetchone()
-        print("result:", result)
-        if not result:
-            return False
 
-        org_id, public = result
-        print("checking chat view perm:", public, check_in_chat(current_user_email, chat_id), check_assist_admin_perm(current_user_email, org_id))
-        return public or check_in_chat(current_user_email, chat_id) or check_assist_admin_perm(current_user_email, org_id)
-
-def check_chat_edit_perm(current_user_email: str, chat_id: int) -> bool:
-    with get_cursor() as cursor:
-        print("Checking chat edit permission for user:", current_user_email, "and chat_id:", chat_id)
-        cursor.execute(
-            """
-                SELECT t.org_id, c.public
-                FROM chats c
-                JOIN teams t ON c.team_id = t.id
-                WHERE c.id = %s
-                """, (chat_id,))
-        
-        result = cursor.fetchone()
-        if not result:
-            return False
-
-        org_id, public = result
-
-        return check_in_chat(current_user_email, chat_id) or check_assist_admin_perm(current_user_email, org_id)
     
 def check_chat_exists_and_not_deleted(chat_id: int) -> bool:
     with get_cursor() as cursor:
