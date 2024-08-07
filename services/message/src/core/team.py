@@ -10,7 +10,7 @@ def check_in_team(user_email: str, team_id: int) -> bool:
             """
             SELECT user_email
             FROM team_users
-            WHERE user_email = %s AND team_id = %s AND deleted = FALSE
+            WHERE user_email = %s AND team_id = %s
             """, (user_email, team_id))
 
         return cursor.fetchone() is not None
