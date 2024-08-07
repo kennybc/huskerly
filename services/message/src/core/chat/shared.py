@@ -65,17 +65,17 @@ def get_posts(current_user_email: str, chat_id: int) -> dict:
         
         cursor.execute(
             """
-            SELECT p.id, p.content, p.created_at, p.edited_at, p.user_email
+            SELECT p.id, p.content, p.created_date, p.edited_at, p.user_email
             FROM posts p
             JOIN chats c ON p.chat_id = c.id
             WHERE p.chat_id = %s AND c.deleted = FALSE
-            """, (chat_id,))
+            """, (chat_id,)) #TODO: add attachments here
 
         result = cursor.fetchall()
         post_history = [{"id": row[0],
                          "content": row[1],
-                         "created_at": row[2],
-                         "edited_at": row[3],
+                         "created_date": row[2],
+                         "edited_date": row[3],
                          "user_email": row[4]} for row in result]
         return post_history
 
