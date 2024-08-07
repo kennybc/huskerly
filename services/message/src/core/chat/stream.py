@@ -32,10 +32,10 @@ def get_stream(current_user_email: str, stream_id: int) -> dict:
 def create_stream(stream_name: str, public: bool, creator_email: str, team_id: int) -> int:
     stream_id = None
     with get_cursor() as cursor:
-        
+        print("creating stream: ", stream_name, public, creator_email, team_id)
         if not check_team_perm(creator_email, team_id):
             raise UserError("User does not have permission to create streams in this team")
-
+        
         cursor.execute(
             """
             INSERT INTO chats (name, created_by_email, team_id, public, chat_type)
