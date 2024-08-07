@@ -54,11 +54,17 @@ def get_team(team_id: int) -> dict:
             FROM teams t
             JOIN team_users tu ON t.id = tu.team_id
             WHERE t.id = %s AND t.deleted = FALSE
-            """, (team_id,))
-
-        result = cursor.fetchall()
-        team_info = {"team_name": result[0][0],
-                     "users": [row[1] for row in result]}
+            """, (team_id,)
+        )
+        
+        team_info = {}
+        for row in cursor.fetchall():
+            team_name = row['team_name']
+            user_email = row['user_email']
+            if team_name not in team_info:
+                team_info[team_name] = []
+            team_info[team_name].append(user_email)
+        
         return team_info
 
 
