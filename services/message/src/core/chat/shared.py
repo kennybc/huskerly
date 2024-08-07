@@ -4,6 +4,7 @@ from utils.connect import get_cursor
 
 def check_chat_view_perm(current_user_email: str, chat_id: int) -> bool:
     with get_cursor() as cursor:
+        print("Checking chat view permission for user:", current_user_email, "and chat_id:", chat_id)
         cursor.execute(
             """
                 SELECT t.org_id, c.public
@@ -11,13 +12,18 @@ def check_chat_view_perm(current_user_email: str, chat_id: int) -> bool:
                 JOIN teams t ON c.team_id = t.id
                 WHERE c.id = %s
                 """, (chat_id,))
+        
+        result = cursor.fetchone()
+        if not result:
+            return False
 
-        org_id, public = cursor.fetchone()
+        org_id, public = result
 
         return public or check_in_chat(current_user_email, chat_id) or check_assist_admin_perm(current_user_email, org_id)
 
 def check_chat_edit_perm(current_user_email: str, chat_id: int) -> bool:
     with get_cursor() as cursor:
+        print("Checking chat edit permission for user:", current_user_email, "and chat_id:", chat_id)
         cursor.execute(
             """
                 SELECT t.org_id, c.public
@@ -25,8 +31,12 @@ def check_chat_edit_perm(current_user_email: str, chat_id: int) -> bool:
                 JOIN teams t ON c.team_id = t.id
                 WHERE c.id = %s
                 """, (chat_id,))
+        
+        result = cursor.fetchone()
+        if not result:
+            return False
 
-        org_id, public = cursor.fetchone()
+        org_id, public = result
 
         return check_in_chat(current_user_email, chat_id) or check_assist_admin_perm(current_user_email, org_id)
     
