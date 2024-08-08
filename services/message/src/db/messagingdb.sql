@@ -94,7 +94,7 @@ CREATE TABLE post_reactions (
 CREATE TABLE attachments (
     id SERIAL PRIMARY KEY,
     post_id BIGINT UNSIGNED NOT NULL,
-    url VARCHAR(255) UNIQUE NOT NULL,
+    url VARCHAR(255) NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
     FOREIGN KEY (post_id) REFERENCES posts(id)
 );

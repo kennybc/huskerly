@@ -97,13 +97,13 @@ async def create_post(
                     VALUES (%s, %s)
                     """, (post_id, url))
                 
-                if cursor.rowcount == 1:
-                    cursor.execute("SELECT LAST_INSERT_ID()")
+                cursor.execute("SELECT LAST_INSERT_ID()")
+                row = cursor.fetchone()
+                if row:
                     attachment_id = cursor.fetchone()[0]
                     attachment_ids.append(attachment_id)
                     print("created attachment: ", attachment_id)
-                else:
-                    raise ServerError("Failed to create attachment")
+
                 
     return (post_id, attachment_ids)
         
