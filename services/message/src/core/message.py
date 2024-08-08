@@ -39,7 +39,7 @@ class MessageHandler:
         response = self.connections.get_item(Key={"connection_id": id})
         channel = response["Item"].get("channel", [])
 
-        self.leave_channel(id, channel)
+        self.leave_channel(id, channel) 
         self.connections.delete_item(Key={"connection_id": id})
         return
 
@@ -85,6 +85,7 @@ class MessageHandler:
 
     # removes a user from their channels when they disconnect
     def leave_channel(self, user_id, channel_id):
+        print("attempting leave channel")
         # removes user from active channel listeners
         response = self.active_channel_conns.get_item(Key={"channel_id": channel_id})
         try:
