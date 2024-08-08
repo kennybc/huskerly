@@ -68,6 +68,7 @@ async def create_post(
     post_id = None
     attachment_ids = []
     with get_cursor() as cursor:
+        print("creating post for user:", current_user_email, "in chat:", chat_id)
         if not check_chat_edit_perm(current_user_email, chat_id):
             raise UserError("User does not have permission to create posts in this chat")
         
@@ -79,6 +80,7 @@ async def create_post(
         
         
         if cursor.rowcount == 1:
+            print("created post")
             result = cursor.fetchone()
             print("result:", result)
             if result:
