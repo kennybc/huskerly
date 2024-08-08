@@ -3,7 +3,7 @@ import json
 
 from utils.secrets import get_secrets
 from boto3.dynamodb.conditions import Attr
-import botocore.exceptions
+from botocore.exceptions import ValidationError
 
 
 class MessageHandler:
@@ -139,7 +139,7 @@ class MessageHandler:
         except Exception as e:
             print(f"Error sending message: {e}")
 
-    # depricated but don't want to delete
+    # deprecated but don't want to delete
     def broadcast(self, message):
         recipients = self.table.scan()["Items"]
         for recipient in recipients:

@@ -99,6 +99,62 @@ def create_org(org_name: str, creator_email: str) -> int:
             org_id = cursor.fetchone()[0]
 
         return org_id
+    
+def demote_to_member(org_id: int, demoted_user_email: str, current_user_email: str):
+    with get_cursor() as cursor:
+        if not check_full_admin_perm(current_user_email, org_id):
+            raise UserError(
+                "User does not have permission to perform this action")
+
+        print(
+            "Demoting user with user_email:", demoted_user_email, "to member for org_id:", org_id
+        )
+
+        if not check_org_exists_and_not_deleted(org_id):
+            raise UserError("Organization does not exist or has been deleted")
+        
+        demote_endpoint = org_user_endpoint + f"{org_id}/demote"
+        print("Demote endpoint:", demote_endpoint)
+        payload = {
+            "user_email": demoted_user_email,
+            "target_role": "MEMBER"
+        }
+        
+        try:
+            response = requests.put(demote_endpoint, json=payload)
+            print("Response:", response.json())
+            if not response or response.status_code != 200:
+                raise ServerError("Failed to demote user")
+        except Exception:
+            raise ServerError(f"""Failed to demote user""")
+        
+def promote_to_assist_admin(org_id: int, new_assist_admin_email: str, current_user_email: str):
+    with get_cursor() as cursor:
+        if not check_full_admin_perm(current_user_email, org_id):
+            raise UserError(
+                "User does not have permission to perform this action")
+
+        print(
+            "Promoting user with user_email:", new_assist_admin_email, "to assistant admin for org_id:", org_id
+        )
+
+        if not check_org_exists_and_not_deleted(org_id):
+            raise UserError("Organization does not exist or has been deleted")
+        
+        promote_endpoint = org_user_endpoint + f"{org_id}/promote"
+        print("Promote endpoint:", promote_endpoint)
+        payload = {
+            "user_email": new_assist_admin_email,
+            "target_role": "ASSIST_ADMIN"
+        }
+        
+        try:
+            response = requests.put(promote_endpoint, json=payload)
+            print("Response:", response.json())
+            if not response or response.status_code != 200:
+                raise ServerError("Failed to demote user")
+        except Exception:
+            raise ServerError(f"""Failed to demote user""")
 
 
 def transfer_lead_admin(
@@ -119,19 +175,20 @@ def transfer_lead_admin(
         if not check_org_exists_and_not_deleted(org_id):
             raise UserError("Organization does not exist or has been deleted")
         
-        promote_endpoint = org_user_endpoint + f"{org_id}/promote/"
+        promote_endpoint = org_user_endpoint + f"{org_id}/promote"
+        print("Promote endpoint:", promote_endpoint)
         payload = {
             "user_email": new_lead_admin_email,
             "target_role": "ORG_ADMIN"
         }
         
         try:
-            response = requests.post(promote_endpoint, json=payload)
+            response = requests.put(promote_endpoint, json=payload)
+            print("Response:", response.json())
             if not response or response.status_code != 200:
                 raise ServerError("Failed to transfer lead admin")
-        except Exception as e:
-            raise ServerError(f"""Error occurred while transferring lead admin role: {
-                          response.text}""") from e
+        except Exception:
+            raise ServerError(f"""Failed to transfer lead admin""")
         
 
 
@@ -207,5 +264,5 @@ def get_org(org_id: int) -> dict:
             raise ServerError("Failed to get organization users")
         users = response.json()["Users"]
 
-        org_info = {"Name": result[0], "Users": users}
+        org_info = {"name": result[0], "users": users, "user_count": len(users)}
         return org_info
