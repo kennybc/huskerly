@@ -42,6 +42,8 @@ async def process_files(files: List[UploadFile]):
         ext = os.path.splitext(file.filename)[1][1:]
         if ext in aliases:
             ext = aliases[ext]
+        if not ext:
+            continue
         if ext not in supported:
             raise UserError("Unsupported file type: " + ext)
 
@@ -55,7 +57,6 @@ async def process_files(files: List[UploadFile]):
         upload_endpoint,
         files=files_data,
     )
-    print("distributions:", distributions)
     print("distributions.json():", distributions.json())
     
     return distributions
