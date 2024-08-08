@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Tuple
 from fastapi import File, UploadFile
 import requests
 from core.chat.shared import check_chat_edit_perm, get_org_id
@@ -62,8 +62,11 @@ async def process_files(files: List[UploadFile]):
     return distributions
 
 
-async def create_post(current_user_email: str, chat_id: int, content: str, files: List[UploadFile] = File(...)) -> int:
+async def create_post(
+    current_user_email: str, chat_id: int, content: str, files: List[UploadFile] = File(...)
+    ) -> Tuple[int, List[int]]:
     post_id = None
+    attachment_ids = []
     with get_cursor() as cursor:
         if not check_chat_edit_perm(current_user_email, chat_id):
             raise UserError("User does not have permission to create posts in this chat")
@@ -83,6 +86,7 @@ async def create_post(current_user_email: str, chat_id: int, content: str, files
             raise ServerError("Failed to create post")
         
     if post_id:
+        
         distributions = await process_files(files)
         with get_cursor() as cursor:
             for url in distributions:
@@ -92,7 +96,12 @@ async def create_post(current_user_email: str, chat_id: int, content: str, files
                     INSERT INTO attachments (post_id, url)
                     VALUES (%s, %s)
                     """, (post_id, url))
-    return post_id
+                if not cursor.rowcount == 1:
+                    raise ServerError("Failed to add attachment")
+                attachment_id = cursor.fetchone()[0]
+                attachment_ids.append(attachment_id)
+
+    return (post_id, attachment_ids)
         
 
 def edit_post(current_user_email: str, post_id: int, content: str):
@@ -128,7 +137,7 @@ def delete_post(current_user_email: str, post_id: int):
         if not cursor.rowcount == 1:
             raise ServerError("Failed to delete post")
         
-def remove_attachment(current_user_email: str, post_id: int, url: str):
+def remove_attachment(current_user_email: str, post_id: int, attachment_id: int):
     with get_cursor() as cursor:
         if not check_post_edit_perm(current_user_email, post_id):
             raise UserError("User does not have permission to remove attachments from this post")
@@ -136,8 +145,8 @@ def remove_attachment(current_user_email: str, post_id: int, url: str):
         cursor.execute(
             """
             DELETE FROM attachments
-            WHERE post_id = %s AND url = %s
-            """, (post_id, url)
+            WHERE post_id = %s AND id = %s
+            """, (post_id, attachment_id)
         )
         
         if not cursor.rowcount == 1:
