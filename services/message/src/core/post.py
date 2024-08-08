@@ -33,12 +33,17 @@ def check_post_edit_perm(user_email: str, post_id: int) -> bool:
 
 
 async def process_files(files: List[UploadFile]):
+    if not files:
+        return []
+    
     files_data = []
     data = {}
     for file in files:
         ext = os.path.splitext(file.filename)[1][1:]
         if ext in aliases:
             ext = aliases[ext]
+        if not ext:
+            continue
         if ext not in supported:
             raise UserError("Unsupported file type: " + ext)
 
@@ -52,7 +57,6 @@ async def process_files(files: List[UploadFile]):
         upload_endpoint,
         files=files_data,
     )
-    print("distributions:", distributions)
     print("distributions.json():", distributions.json())
     
     return distributions
