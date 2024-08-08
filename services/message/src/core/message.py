@@ -39,7 +39,7 @@ class MessageHandler:
         response = self.connections.get_item(Key={"connection_id": id})
         channel = response["Item"].get("channel", [])
 
-        self.leave_channel(id, channel)
+        self.leave_channel(id, channel) 
         self.connections.delete_item(Key={"connection_id": id})
         return
 
