@@ -1,7 +1,7 @@
 from typing import Any
 from fastapi import Body, APIRouter
 
-from core.message import add_connection, remove_connection, send_to_channel, join_channel
+from core.message import add_connection, remove_connection, send_to_channel, join_channel, create_channel
 
 router = APIRouter(prefix="/ws")
 
@@ -37,3 +37,8 @@ async def ws_joinChan(req: Any = Body(None)):
     # join channel takes the unique channel id, the user's email, and the user's connection id
     status = join_channel(req["payload"]["channel_id"], req["payload"]["user_email"], req["connectionId"])
     return status
+
+# Testing only
+@router.post("/createChannel")
+async def ws_createChan(req: Any = Body(None)):
+    create_channel(req["payload"]["channel_id"])
