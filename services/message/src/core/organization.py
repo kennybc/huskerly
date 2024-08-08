@@ -5,8 +5,8 @@ from utils.secrets import get_secrets
 import requests
 
 secrets = get_secrets()
-user_endpoint = secrets["user_ep"]
-org_user_endpoint, user_perm_endpoint = user_endpoint + "org/", user_endpoint + "permission/"
+api_endpoint = secrets["api_ep"]
+org_user_endpoint, user_perm_endpoint = api_endpoint + "user/org/", api_endpoint + "user/permission/"
 
 def check_org_exists_and_not_deleted(org_id: int) -> bool:
     with get_cursor() as cursor:
