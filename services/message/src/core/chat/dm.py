@@ -2,7 +2,7 @@ from core.organization import check_in_org, check_org_exists_and_not_deleted
 from utils.error import UserError, ServerError
 from utils.connect import get_cursor
 from core.chat.shared import check_chat_exists_and_not_deleted, check_chat_view_perm, check_in_chat, get_posts, join_chat
-
+from core.message import create_channel
 
     
 def get_dm_posts(current_user_email: str, chat_id: int) -> dict:
@@ -60,6 +60,9 @@ def create_dm(creator_email: str, other_user_email: str, org_id: int) -> int:
             raise ServerError("Failed to create direct message")
         
     if dm_id:
+        # creates a channel for the websocket connection
+        create_channel(dm_id)
+        
         join_chat(dm_id, creator_email)
         join_chat(dm_id, other_user_email)
     return dm_id

@@ -3,6 +3,7 @@ from core.organization import check_assist_admin_perm
 from core.team import check_team_perm
 from utils.error import UserError, ServerError
 from utils.connect import get_cursor
+from core.message import create_channel
 
 
 
@@ -65,6 +66,9 @@ def create_stream(stream_name: str, public: bool, creator_email: str, team_id: i
             raise ServerError("Failed to create stream")
         
     if stream_id:
+        # creates a channel for the websocket connection
+        create_channel(stream_id)
+        
         join_chat(stream_id, creator_email)
     return stream_id
 
