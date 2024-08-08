@@ -32,7 +32,7 @@ def check_post_edit_perm(user_email: str, post_id: int) -> bool:
         return poster_email == user_email or check_assist_admin_perm(user_email, get_org_id(chat_id))
 
 
-async def process_files(files: List[UploadFile]) -> List[str]:
+async def process_files(files: List[UploadFile]):
     files_data = []
     data = {}
     for file in files:
@@ -52,6 +52,8 @@ async def process_files(files: List[UploadFile]) -> List[str]:
         upload_endpoint,
         files=files_data,
     )
+    print("distributions:", distributions)
+    print("distributions.json():", distributions.json())
     
     return distributions
 
@@ -77,9 +79,10 @@ async def create_post(current_user_email: str, chat_id: int, content: str, files
             raise ServerError("Failed to create post")
         
     if post_id:
-        distributions = process_files(files)
+        distributions = await process_files(files)
         with get_cursor() as cursor:
             for url in distributions:
+                print("url:", url)
                 cursor.execute(
                     """
                     INSERT INTO attachments (post_id, url)

@@ -26,7 +26,7 @@ async def create_post(
         content=content
     )
     
-    post_id = post.create_post(request.current_user_email, request.chat_id, request.content, files)
+    post_id = await post.create_post(request.current_user_email, request.chat_id, request.content, files)
     return {'Status': 'SUCCESS', "post_id": post_id}
 
 class EditPostRequest(BaseModel):
