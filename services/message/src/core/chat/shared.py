@@ -72,15 +72,16 @@ def check_chat_edit_perm(current_user_email: str, chat_id: int) -> bool:
     
 def check_chat_view_perm(current_user_email: str, chat_id: int) -> bool:
     with get_cursor() as cursor:
-        print("Checking chat view permission for user:", current_user_email, "and chat_id:", chat_id)
+        print("Checking chat view permission for user:", current_user_email, "and chat_id:", chat_id) 
         cursor.execute(
             """
                 SELECT public
                 FROM chats
-                WHERE id = %s AND deleted = FALSE
+                WHERE id = %s
                 """, (chat_id,))
         result = cursor.fetchone()
         public = result[0] if result else False
+        print("public:", public)
         
         return public or check_chat_edit_perm(current_user_email, chat_id)
     
