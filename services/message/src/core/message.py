@@ -41,6 +41,11 @@ def remove_connection(id):
     connections.delete_item(Key={"connection_id": id})
     return
     
+# creates a channel to be chatted in
+def create_channel(channel_id):
+    active_channel_conns.put_item(Item={"channel_id" : channel_id,
+                                        "active_connections" : []})
+
 
 # lets a user join a channel to chat in
 def join_channel(channel_id, user_email, connection_id):
