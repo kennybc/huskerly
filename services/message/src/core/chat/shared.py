@@ -1,3 +1,4 @@
+from core.organization import check_assist_admin_perm
 from utils.error import UserError, ServerError
 from utils.connect import get_cursor
     
@@ -23,7 +24,66 @@ def check_in_chat(user_email: str, chat_id: int) -> bool:
             """, (user_email, chat_id))
 
         return cursor.fetchone() is not None
+    
+def get_chat_type(chat_id: int) -> str:
+    with get_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT chat_type
+            FROM chats
+            WHERE id = %s
+            """, (chat_id,))
 
+        result = cursor.fetchone()
+        return result[0] if result else None
+    
+def get_org_id(chat_id: int) -> int:
+    with get_cursor() as cursor:
+        chat_type = get_chat_type(chat_id)
+        org_id = None
+        if chat_type == "DIRECT_MESSAGE":
+            cursor.execute(
+                """
+                SELECT org_id
+                FROM chats
+                WHERE id = %s
+                """, (chat_id,))
+            result = cursor.fetchone()
+            org_id = result[0] if result else None
+        elif chat_type == "STREAM":
+            cursor.execute(
+                """
+                SELECT t.org_id
+                FROM teams t
+                JOIN chats c ON t.id = c.team_id
+                WHERE c.id = %s
+                """, (chat_id,))
+            result = cursor.fetchone()
+            org_id = result[0] if result else None
+        return org_id
+
+    
+def check_chat_edit_perm(current_user_email: str, chat_id: int) -> bool:
+    with get_cursor() as _:
+        print("Checking chat edit permission for user:", current_user_email, "and chat_id:", chat_id)
+        org_id = get_org_id(chat_id)
+        print("checking chat view perm:", check_in_chat(current_user_email, chat_id), check_assist_admin_perm(current_user_email, org_id))
+        return check_in_chat(current_user_email, chat_id) or check_assist_admin_perm(current_user_email, org_id)
+    
+def check_chat_view_perm(current_user_email: str, chat_id: int) -> bool:
+    with get_cursor() as cursor:
+        print("Checking chat view permission for user:", current_user_email, "and chat_id:", chat_id)
+        cursor.execute(
+            """
+                SELECT public
+                FROM chats
+                WHERE id = %s AND deleted = FALSE
+                """, (chat_id,))
+        result = cursor.fetchone()
+        public = result[0] if result else False
+        
+        return public or check_chat_edit_perm(current_user_email, chat_id)
+    
 
 def get_posts(chat_id: int) -> dict:
     with get_cursor() as cursor:

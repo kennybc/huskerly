@@ -1,49 +1,12 @@
-from core.organization import check_assist_admin_perm, check_in_org, check_org_exists_and_not_deleted
+from core.organization import check_in_org, check_org_exists_and_not_deleted
 from utils.error import UserError, ServerError
 from utils.connect import get_cursor
-from core.chat.shared import check_chat_exists_and_not_deleted, check_in_chat, get_posts, join_chat
+from core.chat.shared import check_chat_exists_and_not_deleted, check_chat_view_perm, check_in_chat, get_posts, join_chat
 
-def check_dm_view_perm(current_user_email: str, chat_id: int) -> bool:
-    with get_cursor() as cursor:
-        print("Checking dm view permission for user:", current_user_email, "and chat_id:", chat_id)
-        cursor.execute(
-            """
-                SELECT org_id, public
-                FROM chats
-                WHERE id = %s AND deleted = FALSE AND chat_type = 'DIRECT_MESSAGE'
-                """, (chat_id,))
-        
-        result = cursor.fetchone()
-        print("result:", result)
-        if not result:
-            return False
 
-        org_id, public = result
-        print("checking chat view perm:", public, check_in_chat(current_user_email, chat_id), check_assist_admin_perm(current_user_email, org_id))
-        return public or check_in_chat(current_user_email, chat_id) or check_assist_admin_perm(current_user_email, org_id)
-    
-
-def check_dm_edit_perm(current_user_email: str, chat_id: int) -> bool:
-    with get_cursor() as cursor:
-        print("Checking dm edit permission for user:", current_user_email, "and chat_id:", chat_id)
-        cursor.execute(
-            """
-                SELECT org_id, public
-                FROM chats c
-                WHERE c.id = %s AND c.deleted = FALSE AND c.chat_type = 'DIRECT_MESSAGE'
-                """, (chat_id,))
-        
-        result = cursor.fetchone()
-        if not result:
-            return False
-
-        org_id, public = result
-        
-
-        return check_in_chat(current_user_email, chat_id) or check_assist_admin_perm(current_user_email, org_id)
     
 def get_dm_posts(current_user_email: str, chat_id: int) -> dict:
-    if not check_dm_view_perm(current_user_email, chat_id):
+    if not check_chat_view_perm(current_user_email, chat_id):
         raise UserError("User does not have permission to view this dm")
     return get_posts(chat_id)
 
@@ -52,7 +15,7 @@ def get_dm(current_user_email: str, dm_id: int) -> dict:
         if not check_chat_exists_and_not_deleted(dm_id):
             raise UserError("Stream does not exist or has been deleted")
         
-        if not check_dm_view_perm(current_user_email, dm_id):
+        if not check_chat_view_perm(current_user_email, dm_id):
             raise UserError("User does not have permission to view this dm")
         
         cursor.execute(
