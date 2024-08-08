@@ -76,7 +76,7 @@ class MessageHandler:
 
         # if that worked
         print(user_id + " has joined " + channel_id)
-        self.send_to_channel(user_id, user_id + " has joined " + channel_id)
+        
 
     # removes a user from their channels when they disconnect
     def leave_channel(self, user_id, channel_id):
@@ -98,7 +98,7 @@ class MessageHandler:
                 ExpressionAttributeValues={":new_list": active_connections},
                 ReturnValues="UPDATED_NEW",
             )
-        except ValidationException:
+        except ValidationError:
             # If we're here, the user doesn't have a team, so no need to do any removal
             pass
             
