@@ -44,13 +44,13 @@ class MessageHandler:
         return
 
     # lets a user join a channel to chat in
-    def join_channel(self, channel_id, user_id):
+    def join_channel(self, channel_id, user_email, connection_id):
         # Attempts to add channel to user connection, if it already exists its updated
         print("Attempted join_channel")
         try:
             response = self.connections.put_item(
-                Item={"connection_id": user_id, "channel": channel_id},
-                ConditionExpression=Attr("userid").ne(user_id),
+                Item={"connection_id": connection_id, "channel": channel_id, "email" : user_email},
+                ConditionExpression=Attr("userid").ne(connection_id),
             )
 
             print("Added user to connection db:")
@@ -58,9 +58,14 @@ class MessageHandler:
             if ce.response["Error"]["Code"] == "ConditionalCheckFailedException":
                 print("Key already exists")
                 response = self.connections.update_item(
-                    Key={"userid": user_id},
+                    Key={"userid": connection_id},
                     UpdateExpression="set channel = :channel_id",
                     ExpressionAttributeValues={":channel_id": channel_id},
+                )
+                response2 = self.connections.update_item(
+                    Key={"userid": connection_id},
+                    UpdateExpression="set email = :user_email",
+                    ExpressionAttributeValues={":user_email": user_email},
                 )
                 print("Update existing item succeeded:")
             else:
@@ -70,12 +75,12 @@ class MessageHandler:
         response = self.active_channel_conns.update_item(
             Key={"channel_id": channel_id},
             UpdateExpression="SET active_connections = list_append(active_connections, :i)",
-            ExpressionAttributeValues={":i": [user_id]},
+            ExpressionAttributeValues={":i": [connection_id]},
             ReturnValues="UPDATED_NEW",
         )
 
         # if that worked
-        print(user_id + " has joined " + channel_id)
+        print(user_email + " has joined " + channel_id)
         
 
     # removes a user from their channels when they disconnect
@@ -111,7 +116,8 @@ class MessageHandler:
         response = self.connections.get_item(Key={"connection_id": user_id})
 
         channel = response["Item"].get("channel", [])
-        print("Got channel " + channel)
+        email = response["Item"].get("email", [])
+        print("Got channel " + channel + " for email " + email)
 
         # get the active users in the channel
         response = self.active_channel_conns.get_item(Key={"channel_id": channel})
@@ -123,7 +129,7 @@ class MessageHandler:
 
         # NEED TO CONTINUE HERE
         for recipient in users:
-            self.send_message(recipient, [user_id, message])
+            self.send_message(recipient, [email, message])
 
     # message inclues the sender's id and their message
     def send_message(self, recipient, message):
