@@ -1,7 +1,7 @@
 from typing import Any
 from fastapi import Body, APIRouter
 
-from core.chat.message import MessageHandler
+from core.message import MessageHandler
 
 router = APIRouter(prefix="/ws")
 
