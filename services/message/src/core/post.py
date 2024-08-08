@@ -90,6 +90,8 @@ async def create_post(
         distributions = await process_files(files)
         with get_cursor() as cursor:
             for url in distributions:
+                if not url:
+                    continue
                 print("url:", url)
                 cursor.execute(
                     """
