@@ -1,11 +1,10 @@
 import os
 from typing import List
-
 from fastapi import File, UploadFile
 import requests
 from core.chat.shared import check_chat_edit_perm, get_org_id
 from core.organization import check_assist_admin_perm
-from services.message.src.utils.secrets import get_secrets
+from utils.secrets import get_secrets
 from utils.error import UserError, ServerError
 from utils.connect import get_cursor
 
