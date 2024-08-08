@@ -9,10 +9,10 @@ import os
 router = APIRouter(prefix="/post")
 
 class CreatePostRequest(BaseModel):
-    current_user_email: str
-    chat_id: int
-    content: str
-    files: List[UploadFile]
+    current_user_email: str = Form(...)
+    chat_id: int = Form(...)
+    content: str = Form(...)
+    files: List[UploadFile] = File(...)
 
 @router.post("", response_model=dict, tags=['Public'])
 async def create_post(request: CreatePostRequest):
