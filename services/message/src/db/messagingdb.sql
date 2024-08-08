@@ -27,6 +27,7 @@ CREATE TABLE chats (
     chat_type ENUM('STREAM', 'DIRECT_MESSAGE') NOT NULL,
     name VARCHAR(255) NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
+    created_by_email VARCHAR(255) NOT NULL,
     deleted BOOLEAN DEFAULT FALSE NOT NULL,
     public BOOLEAN NOT NULL,
     team_id BIGINT UNSIGNED,

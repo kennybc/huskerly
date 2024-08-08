@@ -46,7 +46,6 @@ def delete_team(team_id: int, request: TeamDeleteRequest):
     return {'Status': 'SUCCESS'}
 
 
-
 class TeamJoinRequest(BaseModel):
     team_id: int
     user_email: str
@@ -55,4 +54,14 @@ class TeamJoinRequest(BaseModel):
 @router.post("/join", response_model=dict, tags=['Public'])
 def join_team(request: TeamJoinRequest):
     team.join_team(request.team_id, request.user_email)
+    return {'Status': 'SUCCESS'}
+
+class TeamLeaveRequest(BaseModel):
+    team_id: int
+    current_user_email: str
+    team_user_email: str
+
+@router.post("/leave", response_model=dict, tags=['Public'])
+def leave_team(request: TeamLeaveRequest):
+    team.leave_team(request.team_id, request.current_user_email, request.team_user_email)
     return {'Status': 'SUCCESS'}
