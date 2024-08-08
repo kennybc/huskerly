@@ -78,18 +78,13 @@ async def create_post(
             VALUES (%s, %s, %s)
             """, (content, chat_id, current_user_email))
         
-        
         if cursor.rowcount == 1:
-            print("created post")
-            result = cursor.fetchone()
-            print("result:", result)
-            if result:
-                post_id = result[0]
-                print("created stream: ", post_id)
-            else:
-                raise ServerError("Failed to retrieve post ID")
+            cursor.execute("SELECT LAST_INSERT_ID()")
+            post_id = cursor.fetchone()[0]
+            print("created post: ", post_id)
         else:
             raise ServerError("Failed to create post")
+        
         
     if post_id:
         distributions = await process_files(files)
@@ -101,16 +96,15 @@ async def create_post(
                     INSERT INTO attachments (post_id, url)
                     VALUES (%s, %s)
                     """, (post_id, url))
+                
                 if cursor.rowcount == 1:
-                    result = cursor.fetchone()
-                    if result:
-                        attachment_id = result[0]
-                        attachment_ids.append(attachment_id)
-                    else:
-                        raise ServerError("Failed to retrieve attachment ID")
+                    cursor.execute("SELECT LAST_INSERT_ID()")
+                    attachment_id = cursor.fetchone()[0]
+                    attachment_ids.append(attachment_id)
+                    print("created attachment: ", attachment_id)
                 else:
-                    raise ServerError("Failed to add attachment")
-
+                    raise ServerError("Failed to create attachment")
+                
     return (post_id, attachment_ids)
         
 
