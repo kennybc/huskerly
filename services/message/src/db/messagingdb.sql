@@ -15,7 +15,7 @@ CREATE TABLE organizations (
 CREATE TABLE teams (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255),
-    org_id BIGINT UNSIGNED,
+    org_id BIGINT UNSIGNED NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
     created_by_email VARCHAR(255) NOT NULL,
     deleted BOOLEAN DEFAULT FALSE NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE teams (
 CREATE TABLE chats (
     id SERIAL PRIMARY KEY,
     chat_type ENUM('STREAM', 'DIRECT_MESSAGE') NOT NULL,
-    name VARCHAR(255),
+    name VARCHAR(255) NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
     deleted BOOLEAN DEFAULT FALSE NOT NULL,
     public BOOLEAN NOT NULL,
@@ -59,8 +59,8 @@ CREATE TABLE posts (
     id SERIAL PRIMARY KEY,
     user_email VARCHAR(255) NOT NULL,
     parent_post_id BIGINT UNSIGNED,
-    chat_id BIGINT UNSIGNED,
-    content VARCHAR(255),
+    chat_id BIGINT UNSIGNED NOT NULL,
+    content VARCHAR(255) NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
     deleted BOOLEAN DEFAULT FALSE NOT NULL,
     edited_at TIMESTAMP,
@@ -82,7 +82,7 @@ CREATE TABLE team_icons (
 
 CREATE TABLE post_reactions (
     post_id SERIAL,
-    user_email VARCHAR(255),
+    user_email VARCHAR(255) NOT NULL,
     reaction_id BIGINT UNSIGNED NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
     PRIMARY KEY (post_id, user_email),
@@ -92,7 +92,7 @@ CREATE TABLE post_reactions (
 
 CREATE TABLE attachments (
     id SERIAL PRIMARY KEY,
-    post_id BIGINT UNSIGNED,
+    post_id BIGINT UNSIGNED NOT NULL,
     url VARCHAR(255) UNIQUE NOT NULL,
     created_date TIMESTAMP DEFAULT NOW(),
     FOREIGN KEY (post_id) REFERENCES posts(id)
