@@ -77,7 +77,7 @@ async def create_post(current_user_email: str, chat_id: int, content: str, files
             raise ServerError("Failed to create post")
         
     if post_id:
-        distributions = process_files(files)
+        distributions = await process_files(files)
         with get_cursor() as cursor:
             for url in distributions:
                 cursor.execute(
