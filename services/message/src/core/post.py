@@ -33,6 +33,9 @@ def check_post_edit_perm(user_email: str, post_id: int) -> bool:
 
 
 async def process_files(files: List[UploadFile]):
+    if not files:
+        return []
+    
     files_data = []
     data = {}
     for file in files:
