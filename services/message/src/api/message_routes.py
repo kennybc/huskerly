@@ -34,7 +34,7 @@ async def ws_send(req: Any = Body(None)):
 
 
 @router.post("/joinChannel")
-async def ws_joinChan(req: Any = Body(..., embed=True)):
+async def ws_joinChan(req: Any = Body(None)):
     print(req)
     # join channel takes the unique channel id, the user's email, and the user's connection id
     status = message_h.join_channel(req["payload"]["channel_id"], req["payload"]["user_email"], req["connectionId"])
