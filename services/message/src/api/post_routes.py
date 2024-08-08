@@ -9,14 +9,24 @@ import os
 router = APIRouter(prefix="/post")
 
 class CreatePostRequest(BaseModel):
-    current_user_email: str = Form(...)
-    chat_id: int = Form(...)
-    content: str = Form(...)
-    files: List[UploadFile] = File(...)
+    current_user_email: str
+    chat_id: int
+    content: str
 
 @router.post("", response_model=dict, tags=['Public'])
-async def create_post(request: CreatePostRequest):
-    post_id = post.create_post(request.current_user_email, request.chat_id, request.content, request.files)
+async def create_post(
+    current_user_email: str = Form(...),
+    chat_id: int = Form(...),
+    content: str = Form(...),
+    files: List[UploadFile] = File(...)
+):
+    request = CreatePostRequest(
+        current_user_email=current_user_email,
+        chat_id=chat_id,
+        content=content
+    )
+    
+    post_id = post.create_post(request.current_user_email, request.chat_id, request.content, files)
     return {'Status': 'SUCCESS', "post_id": post_id}
 
 class EditPostRequest(BaseModel):
