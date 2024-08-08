@@ -80,6 +80,7 @@ async def create_post(
         
         if cursor.rowcount == 1:
             result = cursor.fetchone()
+            print("result:", result)
             if result:
                 post_id = result[0]
                 print("created stream: ", post_id)
