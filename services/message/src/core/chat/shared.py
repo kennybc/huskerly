@@ -99,7 +99,7 @@ def get_posts(chat_id: int) -> dict:
             SELECT p.id, p.content, p.created_date, p.edited_at, p.user_email
             FROM posts p
             JOIN chats c ON p.chat_id = c.id
-            WHERE p.chat_id = %s AND c.deleted = FALSE
+            WHERE p.chat_id = %s AND c.deleted = FALSE AND p.deleted = FALSE
             """, (chat_id,)) #TODO: add attachments here
 
         result = cursor.fetchall()
