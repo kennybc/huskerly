@@ -104,7 +104,9 @@ async def create_post(
                 row = cursor.fetchone()
                 print("row:", row)
                 if row:
+                    print("row[0]:", row[0])
                     attachment_id = cursor.fetchone()[0]
+                    print("attachment_id:", attachment_id)
                     attachment_ids.append(attachment_id)
                     print("created attachment: ", attachment_id)
 
