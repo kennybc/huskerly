@@ -85,7 +85,7 @@ async def create_post(
         else:
             raise ServerError("Failed to create post")
         
-        
+    #TODO: this is broken
     if post_id:
         distributions = await process_files(files)
         with get_cursor() as cursor:
@@ -98,9 +98,11 @@ async def create_post(
                     INSERT INTO attachments (post_id, url)
                     VALUES (%s, %s)
                     """, (post_id, url))
+                print("cursor.rowcount:", cursor.rowcount)
                 
                 cursor.execute("SELECT LAST_INSERT_ID()")
                 row = cursor.fetchone()
+                print("row:", row)
                 if row:
                     attachment_id = cursor.fetchone()[0]
                     attachment_ids.append(attachment_id)
