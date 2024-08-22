@@ -84,7 +84,7 @@ def join_channel(channel_id, user_email, connection_id):
     )
 
     # if that worked
-    print(user_email + " has joined " + channel_id)
+    return(user_email + " has joined " + channel_id)
         
 
 # removes a user from their channels when they disconnect
