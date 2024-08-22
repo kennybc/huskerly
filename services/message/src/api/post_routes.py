@@ -26,8 +26,8 @@ async def create_post(
         content=content
     )
     
-    post_id = await post.create_post(request.current_user_email, request.chat_id, request.content, files)
-    return {'Status': 'SUCCESS', "post_id": post_id}
+    post_id, attachment_ids = await post.create_post(request.current_user_email, request.chat_id, request.content, files)
+    return {'Status': 'SUCCESS', "post_id": post_id, "attachment_ids": attachment_ids}
 
 class EditPostRequest(BaseModel):
     current_user_email: str
@@ -47,9 +47,9 @@ def delete_post(post_id: int, request: DeletePostRequest):
     post.delete_post(request.current_user_email, post_id)
     return {'Status': 'SUCCESS'}
 
-@router.delete("/{post_id}/attachment/{attachment_url}", response_model=dict, tags=['Public'])
-def remove_attachment(post_id: int, attachment_url: int, request: DeletePostRequest):
-    post.remove_attachment(request.current_user_email, post_id, attachment_url)
+@router.delete("/{post_id}/attachment/{attachment_id}", response_model=dict, tags=['Public'])
+def remove_attachment(post_id: int, attachment_id: int, request: DeletePostRequest):
+    post.remove_attachment(request.current_user_email, post_id, attachment_id)
     return {'Status': 'SUCCESS'}
 
 # @router.post("/send")
